@@ -28,11 +28,30 @@ public:
     UA_Server * getServer(void);
     //UA_StatusCode runServer(void);
     //UA_StatusCode stop(void);
+    //FIXME pass a pointer to a struct containing the node information
+    //FIXME add a struct entry containing the type of not that shall be created
+    //UA_StatusCode addServerNode();
+    /*1. What node shall be created
+     * 2. what are the parent nodes
+     * 3. Will the address space exist from startup
+     * 4. How to then retrieve that node data from the server
+     * 5. check if node exists, then only update the value
+     * 6. otherwise create the node.
+     * 7. Does node exist? ->NO -> create the address space.
+     *
+     * Important:
+     * From the first node that is to be created, construct the parents node first.
+     * Then the parents node of the parents node, such that slowly the complete addres space is built.
+     * To send a value on INIT is also important such that the first value is not empty until the publisher
+     * publishes once.
+     */
 
 private:
     //struct opcua_server * mOPCUAServer;
     UA_Server * mOPCUAServer;
     volatile UA_Boolean* mbServerRunning;
+    UA_ServerConfig *m_server_config;
+    UA_ServerNetworkLayer *m_server_networklayer;
     //static UA_StatusCode mStatusCode;
 
     void run();

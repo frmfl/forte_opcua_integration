@@ -12,7 +12,7 @@
 using namespace forte::com_infra;
 
 
-COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB),  mOPCUAItem(0){
+COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB),  m_ppstOPCUAItem(0){
 	// constructor list initialization
 }
 
@@ -86,6 +86,19 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 	// empty createItems method
 		m_ppstOPCUAItem = new stOPCUAItem *[paNumData]; // this allocates memory for an array of size paNumData to which opc_ua_item points to a pointer that points to the first element of the array.
 		memset(m_ppstOPCUAItem, 0, sizeof(stOPCUAItem *) * paNumData);
+		char* nextParam;
+
+		for(int i = 0; i < paNumData; i++){
+		//	if(0 != paLayerParameter){
+		//		nextParam = strchr()
+		//	}
+		//m_ppstOPCUAItem;
+
+
+
+
+		}
+
 
 		//1. Create Struct for each item
 		//2. Create array of structs holding these items
