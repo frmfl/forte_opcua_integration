@@ -26,6 +26,8 @@ public:
     void setPriority(int pa_nPriority);
     int getPriority(void) const;
     UA_Server * getServer(void);
+    void registerNode();
+
     //UA_StatusCode runServer(void);
     //UA_StatusCode stop(void);
     //FIXME pass a pointer to a struct containing the node information
@@ -57,7 +59,7 @@ private:
     void run();
     void stop();
     //static forte::com_infra::EComResponse m_eComResponse;
-
+	void configureServer();
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUAHANDLER_H_ */

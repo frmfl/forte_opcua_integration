@@ -8,6 +8,7 @@
 #include "opcua_layer.h"
 #include "opcuahandler.h"
 #include <commfb.h>
+#include <devlog.h>
 
 using namespace forte::com_infra;
 
@@ -47,9 +48,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 				numData = 1;
 				// for events only, how are events being processed?
 			}
-
 		}
-
 
 	}
 	return retVal;
@@ -87,17 +86,14 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 		m_ppstOPCUAItem = new stOPCUAItem *[paNumData]; // this allocates memory for an array of size paNumData to which opc_ua_item points to a pointer that points to the first element of the array.
 		memset(m_ppstOPCUAItem, 0, sizeof(stOPCUAItem *) * paNumData);
 		char* nextParam;
-
-		for(int i = 0; i < paNumData; i++){
+		//This calls the handler
+		//*mSFPItem = CEclipseSCADASFPHandler::getInstance().registerDataPoint(paLayerParameter, "Coment");
+		//for(int i = 0; i < paNumData; i++){
 		//	if(0 != paLayerParameter){
 		//		nextParam = strchr()
 		//	}
 		//m_ppstOPCUAItem;
-
-
-
-
-		}
+		//}
 
 
 		//1. Create Struct for each item
