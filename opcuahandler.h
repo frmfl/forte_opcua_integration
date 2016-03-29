@@ -28,7 +28,7 @@ public:
     UA_Server * getServer(void);
     void registerNode();
     UA_Client * getClient(void);
-    void startupOPC_UA_Client();
+    void startupUAServer();
 
 
     //UA_StatusCode runServer(void);
@@ -52,17 +52,29 @@ public:
      */
 
 private:
-    //struct opcua_server * mOPCUAServer;
+	// OPC_UA Server and configuration
     UA_Server * mOPCUAServer;
+    UA_ServerConfig m_server_config;
+
+    // OPC_UA Client and configuration
+    UA_Client * mOPCUAClient;
+    UA_ClientConfig m_client_config;
+
+
+
     volatile UA_Boolean* mbServerRunning;
-    UA_ServerConfig *m_server_config;
-    UA_ServerNetworkLayer *m_server_networklayer;
+    UA_ServerNetworkLayer m_server_networklayer;
     //static UA_StatusCode mStatusCode;
 
-    void run();
-    void stop();
+    void runUAServer();
+    void stopUAServer();
+    UA_StatusCode connectUAClient(UA_Client* client);
+    void destroyUAClient(UA_Client * client);
     //static forte::com_infra::EComResponse m_eComResponse;
-	void configureServer();
+	UA_ServerConfig configureUAServer();
+	UA_ClientConfig configureUAClient();
+	void createUAServer(UA_ServerConfig m_server_config);
+	void createUAClient(UA_ClientConfig m_client_config);
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUAHANDLER_H_ */
