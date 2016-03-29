@@ -27,6 +27,9 @@ public:
     int getPriority(void) const;
     UA_Server * getServer(void);
     void registerNode();
+    UA_Client * getClient(void);
+    void startupOPC_UA_Client();
+
 
     //UA_StatusCode runServer(void);
     //UA_StatusCode stop(void);
