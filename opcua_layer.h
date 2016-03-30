@@ -22,6 +22,7 @@ public:
 	forte::com_infra::EComResponse sendData(void* pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse recvData(const void * pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse processInterrupt();
+	struct Node{std::string fb_name; std::string port_name; std::string port_id;} NodeAttr;
 
 private:
 	forte::com_infra::EComResponse openConnection(char * paLayerParameter);

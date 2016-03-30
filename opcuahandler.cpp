@@ -59,7 +59,6 @@ COPC_UA_Handler::COPC_UA_Handler() : m_server_config(0), m_server_networklayer(0
 
 	//add a namespace in xml format to the server containing the application configuration.
 	//UA_Server_addExternalNamespace()
-
 }
 
 COPC_UA_Handler::~COPC_UA_Handler() {
@@ -68,9 +67,6 @@ COPC_UA_Handler::~COPC_UA_Handler() {
 	m_server_networklayer.deleteMembers(m_server_networklayer);
 	destroyUAClient(getClient());
 }
-
-
-
 
 void COPC_UA_Handler::runUAServer(){
 	*mbServerRunning = UA_Boolean (true);
@@ -103,10 +99,38 @@ void COPC_UA_Handler::destroyUAClient(UA_Client *client){
 	UA_Client_delete(client);
 }
 
+void COPC_UA_Handler::registerNode(Node *NodeAttr){
 
-void COPC_UA_Handler::registerNode(){
+
+	char *fb_name;
+	strcpy(fb_name, NodeAttr->fb_name);
+
+	char *var_name;
+	strcpy(var_name, NodeAttr->port_name);
+
+	char *var_id;
+	strcpy(var_id, NodeAttr->port_id);
+
+	UA_Client *myClient = getClient();
+
+
+	char node_id_string[64];
+	int node_found = 0;
+
+
+	UA_BrowseRequest bReq;
+	UA_BrowseRequest_init(&bReq);
+	bReq.requestedMaxReferencesPerNode = 0;
+	bReq.nodesToBrowse = UA_BrowseDescription_new();
+	bReq.nodesToBrowseSize = 1;
+	bReq.nodesToBrowse[0].nodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER); //browse objects folder
+	bReq.nodesToBrowse[0].resultMask = UA_BROWSERESULTMASK_ALL; //return everything
+
+	UA_BrowseResponse bResp = UA_Client_Service_browse(client, bReq);
+
 	//createObjectNode
-
+	//nodetype depends on the return value of the client. If parent node already exists, then construct
+	//variable node. If variable node exists, do nothing.
 	/*switch (nodetype)
 	{
 	case "object":
@@ -120,27 +144,17 @@ void COPC_UA_Handler::registerNode(){
 	   Aktion4
 	}
 	 */
-
+	/*
 
 	UA_Server_addVariableNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
 			const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
 			const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
 			const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 
-
-			UA_Server_addObjectNode(mOPCUAServer, );
-
-
-	UA_NodeId newVarNodeId = UA_NODEID_STRING(1, "publisher_DI_node");
-	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
-	UA_NodeId parentReferenceNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
-	UA_QualifiedName myIntegerName = UA_QUALIFIEDNAME(1, "the answer");
-
-	UA_Server_readNodeId();
-
-	UA_Server_addVariableNode(mOPCUAServer, newVarNodeId, parentNodeId,
-			parentReferenceNodeId, myIntegerName,
-			UA_NODEID_NULL, attr, NULL, NULL);
+					UA_Server_addObjectNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
+							const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
+							const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
+							const UA_ObjectAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 
 	UA_VariableAttributes attr;
 	UA_VariableAttributes_init(&attr);
@@ -154,17 +168,10 @@ void COPC_UA_Handler::registerNode(){
 	UA_NodeId_init(&objNodeId);
 	UA_QualifiedName
 
-	UA_Server_addObjectNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
-			const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
-			const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
-			const UA_ObjectAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 
 
 	//createVariableNode
-
-
-
-
+	 */
 }
 
 void COPC_UA_Handler::enableHandler(void){
@@ -186,5 +193,166 @@ int COPC_UA_Handler::getPriority(void) const{
 
 	return 0;
 }
+
+UA_NodeId COPC_UA_Handler::getFBNode(CFunctionBlock* pCFB){
+	/*CStringDictionary::TStringId sourceFBTypeNameId = sourceFB->getFBTypeId();
+						const char * sourceFBTypeName = CStringDictionary::getInstance().get(sourceFBTypeNameId);
+						//FIXME Retrieve System name
+
+						CStringDictionary::TStringId sourceFBNameId = sourceFB->getInstanceNameId();
+						const char* sourceFBName = sourceFB->getInstanceName();
+
+						SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+
+						CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
+						const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
+
+						CStringDictionary::TStringId sourceRDTypeNameId = sourceFBInterface->m_aunDODataTypeNames[sourceRD.mPortId];
+						const char * sourceRDTypeName = CStringDictionary::getInstance().get(sourceRDTypeNameId);
+
+						char message[128];
+						sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
+						DEVLOG_INFO(message);
+
+						char *fb_name;
+						strcpy(fb_name, sourceFBName);
+
+						char *fb_typename;
+						strcpy(fb_typename, sourceFBTypeName);
+
+						char *var_name;
+						strcpy(var_name, sourceRDName);
+
+						char *var_typename;
+						strcpy(var_typename, sourceRDTypeName);
+
+						char varBrowse_id[64];
+						sprintf(varBrowse_id, "%s.%s", fb_name, var_name);
+
+						COPC_UA_Handler::getInstance().NodeAttr.fb_name = fb_name;
+						COPC_UA_Handler::getInstance().NodeAttr.fb_typename = fb_typename;
+						COPC_UA_Handler::getInstance().NodeAttr.port_name = var_name;
+						COPC_UA_Handler::getInstance().NodeAttr.port_typename = var_typename;
+	 */
+
+}
+
+
+void COPC_UA_Handler::createUAObjNode(char* fb_name, char* var_name){
+
+	/*UA_Server *server, const UA_NodeId requestedNewNodeId,
+	const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
+	const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
+	const UA_ObjectAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId
+	 */
+
+	UA_NodeId newObjNodeId = UA_NODEID_STRING_ALLOC(1,fb_name);
+	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+	UA_QualifiedName objBrowseName = UA_QUALIFIEDNAME(1, fb_name);
+	UA_NodeId objTypeDefinition = UA_NODEID_NUMERIC(0, UA_NS0ID_FOLDERTYPE);
+
+	UA_ObjectAttributes obj_attr;
+	UA_ObjectAttributes_init(&obj_attr);
+	char dispName[32];
+	sprintf(dispName, "FB-%s", fb_name);
+	obj_attr.displayName = UA_LOCALIZEDTEXT("en_US", dispName);
+	sprintf(descName, "FB-%s of Publisher source point node %s", fb_name, var_name);
+	obj_attr.description =
+			// empty callback for publisher object node
+
+
+
+			UA_StatusCode retval = UA_Client_addObjectNode(
+					client,
+					UA_NODEID_STRING_ALLOC(1, fb_id),
+					UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
+					UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+					UA_QUALIFIEDNAME(0, fb_id),
+					UA_NODEID_NULL, // no variable type
+					obj_attr, &obj_id
+			);
+	if(retval == UA_STATUSCODE_GOOD )
+		printf("Created new object %s \n", fb_id);
+	else
+		printf("Error creating object : %x\n", retval);
+
+	return obj_id;
+}
+
+
+UA_Boolean write_value = 0;
+
+int write_type = UA_NS0ID_BOOLEAN;
+//int write_type = UA_NS0ID_SBYTE;
+//int write_type = UA_NS0ID_BYTE;
+//int write_type = UA_NS0ID_INT16;
+//int write_type = UA_NS0ID_UINT16;
+//int write_type = UA_NS0ID_INT32;
+//int write_type = UA_NS0ID_UINT32;
+//int write_type = UA_NS0ID_INT64;
+//int write_type = UA_NS0ID_UINT64;
+//int write_type = UA_NS0ID_FLOAT;
+//int write_type = UA_NS0ID_DOUBLE;
+
+
+
+
+void COPC_UA_Handler::createUAVarNode(char* fb_id, char* var_id){
+	//UA_NodeId createVariableNode(UA_Client *server, UA_NodeId parentNodeId, char *fb_id, char *var_id){
+	UA_NodeId obj_id;
+
+	/*
+			UA_Server_addVariableNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
+					const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
+					const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
+					const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
+	 */
+
+	char browse[32];
+	sprintf(browse, "%s.%s", fb_id, var_id);
+
+	UA_NodeId newVarNodeId = UA_NODEID_STRING_ALLOC(1,browse);
+	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+	char browsename[32];
+	sprintf(browsename, "%s", var_id);
+	UA_QualifiedName varBrowseName = UA_QUALIFIEDNAME(1, browsename);
+	UA_NodeId varType = UA_NODEID_NULL;
+
+	UA_VariableAttributes var_attr;
+	UA_VariableAttributes_init(&var_attr);
+	char display[32];
+	sprintf(display, "Variable-%s", var_id);
+	var_attr.displayName = UA_LOCALIZEDTEXT("en_US", display);
+	var_attr.description = UA_LOCALIZEDTEXT("en_US", var_id);
+
+	UA_Variant_setScalar(&attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
+
+
+	UA_Variant_setScalarCopy(&var_attr.value, &write_value, &UA_TYPES[write_type]);
+
+	UA_StatusCode retval = UA_Server_addVariableNode(
+			server,
+			newVarNodeId,
+			parentNodeId,
+			parentReferenceTypeId,
+			UA_QUALIFIEDNAME(0, browse),
+			UA_NODEID_NULL, // no variable type
+			var_attr, &obj_id
+	);
+	if(retval == UA_STATUSCODE_GOOD )
+		printf("Created new object %s \n", browse);
+	else
+		printf("Error creating object : %x\n", retval);
+
+	return obj_id;
+
+}
+}
+
+
+
+
 
 

@@ -26,9 +26,9 @@ public:
     void setPriority(int pa_nPriority);
     int getPriority(void) const;
     UA_Server * getServer(void);
-    void registerNode();
     UA_Client * getClient(void);
     void startupUAServer();
+    UA_NodeId getFBNode(CFunctionBlock *pCFB);
 
 
     //UA_StatusCode runServer(void);
@@ -75,6 +75,10 @@ private:
 	UA_ClientConfig configureUAClient();
 	void createUAServer(UA_ServerConfig m_server_config);
 	void createUAClient(UA_ClientConfig m_client_config);
+	void createUAVarNode();
+	void createUAObjNode();
+
+	void registerNode(struct Node *NodeAttr);
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUAHANDLER_H_ */
