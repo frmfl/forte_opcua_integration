@@ -22,12 +22,16 @@ public:
 	forte::com_infra::EComResponse sendData(void* pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse recvData(const void * pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse processInterrupt();
-	struct Node{std::string fb_name; std::string port_name; std::string port_id;} NodeAttr;
+	struct ASNodeId{std::string fb_name; std::string port_name; std::string port_id;} NodeAttr;
 
 private:
 	forte::com_infra::EComResponse openConnection(char * paLayerParameter);
-	struct stOPCUAItem **m_ppstOPCUAItem;
+	struct {UA_NodeId **ppNodeId_ParentFB;	//!< pointer to the array of Parent FunctionBlock NodeIds managed by the OCP_UA Server Stack
+			UA_NodeId **ppNodeId_SrcPoint;} st_ParentChildNodeId;	//!< pointer to the array of SourcePoint (SDs) NodeIds managed by the OCP_UA Server Stack
+
 	forte::com_infra::EComResponse createItems(CIEC_ANY *paDataArray, int paNumData, char *paLayerParameter);
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUA_LAYER_H_ */
+
+struct of two arrays each containing pointers to node ids

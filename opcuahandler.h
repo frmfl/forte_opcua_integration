@@ -20,6 +20,9 @@ class COPC_UA_Handler : public CExternalEventHandler, public CThread{
 	DECLARE_SINGLETON(COPC_UA_Handler);
 
 public:
+
+	CIEC_ANY areturnFBID[];
+
     /* functions needed for the external event handler interface */
     void enableHandler(void);
     void disableHandler(void);
@@ -28,7 +31,7 @@ public:
     UA_Server * getServer(void);
     UA_Client * getClient(void);
     void startupUAServer();
-    UA_NodeId getFBNode(CFunctionBlock *pCFB);
+    UA_StatusCode getFBNode(CFunctionBlock *pCFB, UA_NodeId* returnFBNode);
 
 
     //UA_StatusCode runServer(void);

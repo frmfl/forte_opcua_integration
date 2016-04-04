@@ -194,7 +194,35 @@ int COPC_UA_Handler::getPriority(void) const{
 	return 0;
 }
 
-UA_NodeId COPC_UA_Handler::getFBNode(CFunctionBlock* pCFB){
+/*
+ * Method receives a pointer to a Function Block and reads the NodeId of
+ * requested block. If reading successful a positive status code shall be returned
+ * and the NodeId written to the returnFB pointer.
+ *
+ */
+
+UA_StatusCode COPC_UA_Handler::getFBNode(CFunctionBlock* pCFB, UA_NodeId* returnFBId){
+	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+	CStringDictionary::TStringId sourceFBTypeId = pCFB->getFBTypeId();
+	const char* nodeId = CStringDictionary::getInstance().get(sourceFBTypeId); 		// Name of the SourcePoint function block
+	UA_NodeId fbNodeId = UA_NODEID_STRING_ALLOC(1, nodeId);		// Create new FBNodeId from char pointer
+
+	UA_NodeId* returnNodeId = UA_NodeId_new();
+	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, fbNodeId, returnNodeId);		// read node of given ID
+	if(retVal != UA_STATUSCODE_GOOD){
+		return retVal;		// reading not successful
+	}else{
+		retVal = UA_NodeId_copy(returnNodeId, returnFBId);	// reading successful, return NodeId
+	};
+	return retVal;
+
+
+	/*if(retVal != UA_STATUSCODE_GOOD){
+		//retVal = UA_STATUSCODE_BADUNEXPECTEDERROR;
+
+		}
+	*/
+
 	/*CStringDictionary::TStringId sourceFBTypeNameId = sourceFB->getFBTypeId();
 						const char * sourceFBTypeName = CStringDictionary::getInstance().get(sourceFBTypeNameId);
 						//FIXME Retrieve System name
