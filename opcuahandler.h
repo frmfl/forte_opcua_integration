@@ -31,7 +31,10 @@ public:
     UA_Server * getServer(void);
     UA_Client * getClient(void);
     void startupUAServer();
-    UA_StatusCode getFBNode(CFunctionBlock *pCFB, UA_NodeId* returnFBNode);
+    UA_StatusCode getFBNodeId(CFunctionBlock *pCFB, UA_NodeId* returnFBNodeId);		// get function block (FB) NodeId
+    UA_StatusCode getSPNodeId(CFunctionBlock *pCFB, UA_NodeId* returnSPNodeId);	// get source point (SP) NodeId
+    UA_StatusCode createUAVarNode(UA_NodeId * pSP);	// create variable node from SourcePoint Node Id
+	UA_StatusCode createUAObjNode(CFunctionBlock* pCFB);	// create object node from Parent Function Block Node Id
 
 
     //UA_StatusCode runServer(void);
@@ -78,8 +81,7 @@ private:
 	UA_ClientConfig configureUAClient();
 	void createUAServer(UA_ServerConfig m_server_config);
 	void createUAClient(UA_ClientConfig m_client_config);
-	void createUAVarNode();
-	void createUAObjNode();
+
 
 	void registerNode(struct Node *NodeAttr);
 };

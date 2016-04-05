@@ -195,34 +195,28 @@ int COPC_UA_Handler::getPriority(void) const{
 }
 
 /*
- * Method receives a pointer to a Function Block and reads the NodeId of
- * requested block. If reading successful a positive status code shall be returned
- * and the NodeId written to the returnFB pointer.
- *
+ * Get Function Block Node Id from the pointer to a CFunctionBlock.
+ * Method is used to check if a not to the pointed function block already
+ * exists in the address space of the OPC-UA Server.
  */
 
-UA_StatusCode COPC_UA_Handler::getFBNode(CFunctionBlock* pCFB, UA_NodeId* returnFBId){
+UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* returnFBNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-	CStringDictionary::TStringId sourceFBTypeId = pCFB->getFBTypeId();
-	const char* nodeId = CStringDictionary::getInstance().get(sourceFBTypeId); 		// Name of the SourcePoint function block
-	UA_NodeId fbNodeId = UA_NODEID_STRING_ALLOC(1, nodeId);		// Create new FBNodeId from char pointer
+	const char* FBInstanceName = pCFB->getInstanceName();	// Name of the SourcePoint function block
+	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
-	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, fbNodeId, returnNodeId);		// read node of given ID
+	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, FBNodeId, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
+		break;
 	}else{
-		retVal = UA_NodeId_copy(returnNodeId, returnFBId);	// reading successful, return NodeId
+		retVal = UA_NodeId_copy(returnNodeId, returnFBNodeId);	// reading successful, return NodeId
 	};
 	return retVal;
 
 
-	/*if(retVal != UA_STATUSCODE_GOOD){
-		//retVal = UA_STATUSCODE_BADUNEXPECTEDERROR;
-
-		}
-	*/
-
+	// Careful container!
 	/*CStringDictionary::TStringId sourceFBTypeNameId = sourceFB->getFBTypeId();
 						const char * sourceFBTypeName = CStringDictionary::getInstance().get(sourceFBTypeNameId);
 						//FIXME Retrieve System name
@@ -266,30 +260,37 @@ UA_StatusCode COPC_UA_Handler::getFBNode(CFunctionBlock* pCFB, UA_NodeId* return
 }
 
 
-void COPC_UA_Handler::createUAObjNode(char* fb_name, char* var_name){
+UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, UA_NodeId * returnSPNodeId){
+
+}
+
+
+
+UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB){
 
 	/*UA_Server *server, const UA_NodeId requestedNewNodeId,
 	const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
 	const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
 	const UA_ObjectAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId
 	 */
+	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
+	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId); 		// Name of the SourcePoint function block
 
-	UA_NodeId newObjNodeId = UA_NODEID_STRING_ALLOC(1,fb_name);
+	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
 	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
 	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
-	UA_QualifiedName objBrowseName = UA_QUALIFIEDNAME(1, fb_name);
+	UA_QualifiedName objBrowseName = UA_QUALIFIEDNAME_ALLOC(1, FBInstanceName);
 	UA_NodeId objTypeDefinition = UA_NODEID_NUMERIC(0, UA_NS0ID_FOLDERTYPE);
 
 	UA_ObjectAttributes obj_attr;
 	UA_ObjectAttributes_init(&obj_attr);
 	char dispName[32];
-	sprintf(dispName, "FB-%s", fb_name);
+	sprintf(dispName, "FB-%s", FBInstanceName);
 	obj_attr.displayName = UA_LOCALIZEDTEXT("en_US", dispName);
-	sprintf(descName, "FB-%s of Publisher source point node %s", fb_name, var_name);
+	//sprintf(despName, "FB-%s of Publisher source point node %s", fb_name, var_name);
 	obj_attr.description =
-			// empty callback for publisher object node
-
-
+			sprintf(dispName, "FB-%s of Publisher source point node %s", fb_name, var_name);	// empty callback for publisher object node
 
 			UA_StatusCode retval = UA_Client_addObjectNode(
 					client,
@@ -308,7 +309,7 @@ void COPC_UA_Handler::createUAObjNode(char* fb_name, char* var_name){
 	return obj_id;
 }
 
-
+/*
 UA_Boolean write_value = 0;
 
 int write_type = UA_NS0ID_BOOLEAN;
@@ -322,7 +323,7 @@ int write_type = UA_NS0ID_BOOLEAN;
 //int write_type = UA_NS0ID_UINT64;
 //int write_type = UA_NS0ID_FLOAT;
 //int write_type = UA_NS0ID_DOUBLE;
-
+ */
 
 
 

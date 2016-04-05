@@ -67,28 +67,75 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 		char* nextParam;
 
-	    for(int i = 0; i < paNumData; i++){
-	      /*check for FBParent existance
-	       * create FBParent Node
-	       * check for SourcePoint Node existing
-	       * create SourcePoint Node
-	       */
-	    	st_ParentChildNodeId.ppNodeId_ParentFB[i] = CEclipseSCADASFPHandler::getInstance().registerDataPoint(paLayerParameter, "Coment");
+		/* check for FBParent existence
+		 * create FBParent Node
+		 * check for SourcePoint Node existing
+		 * create SourcePoint Node
+		 */
 
-	        if(0 != mSFPItem[i]){
-	          //write the initial value to the SFP server so that the data type of the item gets set
-	          CEclipseSCADASFPHandler::updateDataPoint(mSFPItem[i], paDataArray[i]);
-	        }else {
-	          retVal = e_InitInvalidId;
-	          break;
-	        }
+		TDataConnectionPtr pao_DIConns = getCommFB()->m_apoDIConns;
+		for(int i = 0; i < paNumData; i++){
+			if(!pao_DIConns->isConnected()){
+				DEVLOG_INFO("OPC_UA Publisher DIs not connected\n");
+			}else{
+				DEVLOG_INFO("OPC_UA Publisher DIs are connected, linked list not empty\n");
+
+				// loop over all SD-ports and retrieve Source FB Information
+				SConnectionPoint& sourceRD = pao_DIConns[i].getSourceId();
+
+				CFunctionBlock *sourceFB = sourceRD.mFB;	// pointer to Parent Function Block
+				UA_NodeId* returnFBNodeId = UA_NodeId_new();
+
+				// check if Function Block is present in the Address Space otherwise create it
+				UA_StatusCode retValgetNode = COPC_UA_Handler::getInstance().getFBNodeId(sourceFB, returnFBNodeId);
+
+				if(retValgetNode != UA_STATUSCODE_GOOD){
+					//create the parent object node in the address space
+					UA_StatusCode retValcreateNode = COPC_UA_Handler::getInstance().createUAObjNode();
+					st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
+
+				}else{
+					//create the child node
+					st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
+				}
+
+
+				/************************************************************/
+
+
+				SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+
+				CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
+				const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
+
+				CStringDictionary::TStringId sourceRDTypeNameId = sourceFBInterface->m_aunDODataTypeNames[sourceRD.mPortId];
+				const char * sourceRDTypeName = CStringDictionary::getInstance().get(sourceRDTypeNameId);
+
+				char message[128];
+				sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
+				DEVLOG_INFO(message);
+
+				/*************************************************************/
+
+				//This calls the handler
+				COPC_UA_Handler::getInstance().registerNode(&NodeAttr);
+
+				registerDataPoint(paLayerParameter, "Coment");
+
+				if(0 != mSFPItem[i]){
+					//write the initial value to the SFP server so that the data type of the item gets set
+					CEclipseSCADASFPHandler::updateDataPoint(mSFPItem[i], paDataArray[i]);
+				}else {
+					retVal = e_InitInvalidId;
+					break;
+				}
 
 
 
-	        retVal = e_InitInvalidId;
-	        break;
-	      }
-	    }
+				retVal = e_InitInvalidId;
+				break;
+			}
+		}
 
 
 		//1. Create Struct for each item
@@ -103,27 +150,12 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 
 
-		TDataConnectionPtr pao_DIConns = getCommFB()->m_apoDIConns;
-			for(int i = 0; i<=paNumData; i++){
-				if(!pao_DIConns->isConnected()){
-					DEVLOG_INFO("OPC_UA Publisher DIs not connected\n");
-				}else{
-					DEVLOG_INFO("OPC_UA Publisher DIs are connected, linked list not empty\n");
-					// loop over all DI-ports and retrieve Source FB Information
-					SConnectionPoint& sourceRD = pao_DIConns[i].getSourceId();
-
-					CFunctionBlock *sourceFB = sourceRD.mFB;
-					UA_NodeId returnFBNodeId = COPC_UA_Handler::getInstance().getFBNode(sourceFB);
-					//Create Struct holding FB node ID's
-
-
-					//This calls the handler
-					COPC_UA_Handler::getInstance().registerNode(&NodeAttr);
-				}
-			}
 
 	}
-	return retVal;
+}
+
+}
+return retVal;
 
 }
 
@@ -131,22 +163,22 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	EComResponse retVal = e_ProcessDataOk;
 
-	  EComResponse retVal = e_ProcessDataOk;
+	EComResponse retVal = e_ProcessDataOk;
 
-	  if(0 == paSize){
-	    //TODO change to an update now with out the need for a new allocation
-		  UA_Server_writeValue()
-	    sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
-	  }else {
-	    CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
-	    for(unsigned int i = 0; i < paSize; i++){
-	      CEclipseSCADASFPHandler::updateDataPoint(mSFPItem[i], SDs[i]);  //TODO use common timestamp for all
-	    }
-	  }
-	  return retVal;
+	if(0 == paSize){
+		//TODO change to an update now with out the need for a new allocation
+		UA_Server_writeValue()
+	    				sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
+	}else {
+		CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
+		for(unsigned int i = 0; i < paSize; i++){
+			CEclipseSCADASFPHandler::updateDataPoint(mSFPItem[i], SDs[i]);  //TODO use common timestamp for all
+		}
 	}
-
 	return retVal;
+}
+
+return retVal;
 }
 
 
