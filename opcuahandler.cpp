@@ -265,48 +265,42 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, UA_NodeId * ret
 }
 
 
+/* Function creates an address space obeject node defined by given pointer to
+ * a control function block. If creation successful the NodeId is returned otherwise
+ * UA_StatusCode from node creation with error message.
+ */
+UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId){
 
-UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB){
-
-	/*UA_Server *server, const UA_NodeId requestedNewNodeId,
-	const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
-	const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
-	const UA_ObjectAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId
-	 */
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
 	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId); 		// Name of the SourcePoint function block
 
 	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
 	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
-	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
-	UA_QualifiedName objBrowseName = UA_QUALIFIEDNAME_ALLOC(1, FBInstanceName);
+	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+	UA_QualifiedName objBrowseName = UA_QUALIFIEDNAME_ALLOC(0, FBInstanceName);
 	UA_NodeId objTypeDefinition = UA_NODEID_NUMERIC(0, UA_NS0ID_FOLDERTYPE);
 
 	UA_ObjectAttributes obj_attr;
 	UA_ObjectAttributes_init(&obj_attr);
 	char dispName[32];
-	sprintf(dispName, "FB-%s", FBInstanceName);
+	sprintf(dispName, "FB-%s\n", FBInstanceName);
 	obj_attr.displayName = UA_LOCALIZEDTEXT("en_US", dispName);
-	//sprintf(despName, "FB-%s of Publisher source point node %s", fb_name, var_name);
-	obj_attr.description =
-			sprintf(dispName, "FB-%s of Publisher source point node %s", fb_name, var_name);	// empty callback for publisher object node
+	char descpName[];
+	sprintf(descpName, "Object node of FB-%s, origin: Publisher\n", FBInstanceName);
+	obj_attr.description = UA_LocalizedText("en_US", descpName);
+	UA_NodeId * returnNodeId = UA_NodeId_new();
+	UA_StatusCode retVal = UA_Server_addObjectNode(mOPCUAServer, FBNodeId, parentNodeId, parentReferenceTypeId, objBrowseName, objTypeDefinition, obj_attr, NULL, returnNodeId);
 
-			UA_StatusCode retval = UA_Client_addObjectNode(
-					client,
-					UA_NODEID_STRING_ALLOC(1, fb_id),
-					UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
-					UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-					UA_QUALIFIEDNAME(0, fb_id),
-					UA_NODEID_NULL, // no variable type
-					obj_attr, &obj_id
-			);
-	if(retval == UA_STATUSCODE_GOOD )
-		printf("Created new object %s \n", fb_id);
-	else
-		printf("Error creating object : %x\n", retval);
-
-	return obj_id;
+    if(retVal == UA_STATUSCODE_GOOD ){
+    	DEVLOG_INFO("Created new object %s \n", dispName);
+    	retVal = UA_NodeId_copy(returnNodeId, returnObjNodeId);
+    }else{
+        DEVLOG_INFO("Error creating object %s: %x\n", dispName, retVal);
+        return retVal;
+        break;
+    }
+    return retVal;
 }
 
 /*
@@ -339,20 +333,20 @@ void COPC_UA_Handler::createUAVarNode(char* fb_id, char* var_id){
 	 */
 
 	char browse[32];
-	sprintf(browse, "%s.%s", fb_id, var_id);
+	sprintf(browse, "%s.%s\n", fb_id, var_id);
 
 	UA_NodeId newVarNodeId = UA_NODEID_STRING_ALLOC(1,browse);
 	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
 	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
 	char browsename[32];
-	sprintf(browsename, "%s", var_id);
+	sprintf(browsename, "%s\n", var_id);
 	UA_QualifiedName varBrowseName = UA_QUALIFIEDNAME(1, browsename);
 	UA_NodeId varType = UA_NODEID_NULL;
 
 	UA_VariableAttributes var_attr;
 	UA_VariableAttributes_init(&var_attr);
 	char display[32];
-	sprintf(display, "Variable-%s", var_id);
+	sprintf(display, "Variable-%s\n", var_id);
 	var_attr.displayName = UA_LOCALIZEDTEXT("en_US", display);
 	var_attr.description = UA_LOCALIZEDTEXT("en_US", var_id);
 

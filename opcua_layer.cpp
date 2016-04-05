@@ -89,15 +89,24 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 				// check if Function Block is present in the Address Space otherwise create it
 				UA_StatusCode retValgetNode = COPC_UA_Handler::getInstance().getFBNodeId(sourceFB, returnFBNodeId);
 
+				/*
+				 * Parent object node (FB Node) was not present in the UA Address space -> create it.
+				 */
 				if(retValgetNode != UA_STATUSCODE_GOOD){
-					//create the parent object node in the address space
-					UA_StatusCode retValcreateNode = COPC_UA_Handler::getInstance().createUAObjNode();
-					st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
-
-				}else{
-					//create the child node
+					// create the parent object node in the address space
+					DEVLOG_INFO("Parent object node was not present in AS, creating it.\n")
+					UA_NodeId * returnObjNodeId = UA_NodeId_new();
+					UA_StatusCode retValcreateNode = COPC_UA_Handler::getInstance().createUAObjNode(sourceFB, returnObjNodeId);
+					if(retValcreateNode != UA_STATUSCODE_GOOD){
+						DEVLOG_INFO("Error creating node %s\n", retValcreateNode);
+						retVal = retValcreateNode;
+						return retVal;
+					}
 					st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
 				}
+				//create the child node
+				st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
+
 
 
 				/************************************************************/
@@ -168,7 +177,7 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	if(0 == paSize){
 		//TODO change to an update now with out the need for a new allocation
 		UA_Server_writeValue()
-	    				sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
+	    								sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
 	}else {
 		CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
 		for(unsigned int i = 0; i < paSize; i++){

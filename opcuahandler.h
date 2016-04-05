@@ -34,7 +34,7 @@ public:
     UA_StatusCode getFBNodeId(CFunctionBlock *pCFB, UA_NodeId* returnFBNodeId);		// get function block (FB) NodeId
     UA_StatusCode getSPNodeId(CFunctionBlock *pCFB, UA_NodeId* returnSPNodeId);	// get source point (SP) NodeId
     UA_StatusCode createUAVarNode(UA_NodeId * pSP);	// create variable node from SourcePoint Node Id
-	UA_StatusCode createUAObjNode(CFunctionBlock* pCFB);	// create object node from Parent Function Block Node Id
+	UA_StatusCode createUAObjNode(CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
 
 
     //UA_StatusCode runServer(void);
