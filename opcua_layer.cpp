@@ -117,25 +117,49 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 					}
 				}
 
-				// Create SourcePort Node (Publishers SD Port) in UA Server Address Space
-				if(retVal = UA_STATUSCODE_GOOD){
+				UA_NodeId* returnSPNodeId = UA_NodeId_new();
+				// check if Variable Node is present in Address Space otherwise create it.
+				UA_StatusCode retValgetNode = COPC_UA_Handler::getInstance().getSPNodeId(sourceFB, sourceRD, returnSPNodeId);
+
+				if(retValgetNode == UA_STATUSCODE_GOOD){
+					// SourcePoint node (SP Node) was present in the UA Address Space.
+					DEVLOG_INFO("SP node already present in the Address space.\n");
+					st_ParentChildNodeId.ppNodeId_SrcPoint[i] = returnSPNodeId;
+					retVal = UA_STATUSCODE_GOOD;
+
+				}else{
+					// Create SourcePort Node (Publishers SD Port) in UA Server Address Space
 					// pass Function Block pointer
-					// pass SourcePort pointer
-					SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+					// pass SourcePort reference
 					UA_NodeId * returnVarNodeId = UA_NodeId_new();
 					UA_StatusCode retValcreateVarNode = COPC_UA_Handler::getInstance().createUAVarNode(sourceFB, sourceRD, returnVarNodeId);
 
+					if(retValcreateVarNode == UA_STATUSCODE_GOOD){
+						// Node creation successful
+						DEVLOG_INFO("Object node %s successfully created.\n",returnVarNodeId->identifier);		//FIXME add variablenode identifier here
+						st_ParentChildNodeId.ppNodeId_SrcPoint[i] = returnVarNodeId;
+						retVal = UA_STATUSCODE_GOOD;
+
+					}else{
+						// Node creation not successful
+						DEVLOG_ERROR("Error creating node %s\n", retValcreateVarNode);
+						retVal = retValcreateVarNode;
+
+					}
 				}
+			}
+		}
+	}
+}
 
 
 
 
+/*
 
 
-				/************************************************************/
 
-
-				SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+	SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
 
 				CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
 				const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
@@ -146,8 +170,6 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 				char message[128];
 				sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
 				DEVLOG_INFO(message);
-
-				/*************************************************************/
 
 				//This calls the handler
 				COPC_UA_Handler::getInstance().registerNode(&NodeAttr);
@@ -190,6 +212,7 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 return retVal;
 
 }
+*/
 
 
 EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
@@ -200,7 +223,7 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	if(0 == paSize){
 		//TODO change to an update now with out the need for a new allocation
 		UA_Server_writeValue()
-	    																				sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
+	    																								sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
 	}else {
 		CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
 		for(unsigned int i = 0; i < paSize; i++){

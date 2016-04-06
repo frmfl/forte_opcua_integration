@@ -262,33 +262,26 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* retu
 
 UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-	const char* FBInstanceName = pCFB->getInstanceName();	// Name of the SourcePoint function block
+	/*const char* FBInstanceName = pCFB->getInstanceName();	// Name of the SourcePoint function block
 	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
+	 */
 
+	// Important Comment: Reading the node without reference to parent node id, unknown if this works.
+	SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
 
+	CStringDictionary::TStringId SPNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
+	const char * SPName = CStringDictionary::getInstance().get(SPNameId);
+	UA_NodeId SPNodeId = UA_NODEID_STRING_ALLOC(1, SPName);
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
-	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, FBNodeId, returnNodeId);		// read node of given ID
+	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, SPName, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
 		break;
 	}else{
-		retVal = UA_NodeId_copy(returnNodeId, returnFBNodeId);	// reading successful, return NodeId
+		retVal = UA_NodeId_copy(returnNodeId, returnSPNodeId);	// reading successful, return NodeId
 	};
 	return retVal;
-
-
-	SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
-
-	CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
-	const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
-
-	CStringDictionary::TStringId sourceRDTypeNameId = sourceFBInterface->m_aunDODataTypeNames[sourceRD.mPortId];
-	const char * sourceRDTypeName = CStringDictionary::getInstance().get(sourceRDTypeNameId);
-
-	char message[128];
-	sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
-	DEVLOG_INFO(message);
 }
 
 
@@ -340,25 +333,34 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnection
 					const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
 					const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 	 */
-	SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+	SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
+
+	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
+	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId);
+
+
+	SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
+
+	CStringDictionary::TStringId SPNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
+	const char * SPName = CStringDictionary::getInstance().get(SPNameId);
 
 	char browse[32];
-	sprintf(browse, "%s.%s\n", fb_id, var_id);
+	sprintf(browse, "%s.%s\n", FBInstanceName, SPName);
 
 	UA_NodeId newVarNodeId = UA_NODEID_STRING_ALLOC(1,browse);
 	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
 	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
 	char browsename[32];
-	sprintf(browsename, "%s\n", var_id);
+	sprintf(browsename, "%s\n", SPName);
 	UA_QualifiedName varBrowseName = UA_QUALIFIEDNAME(1, browsename);
 	UA_NodeId varType = UA_NODEID_NULL;
 
 	UA_VariableAttributes var_attr;
 	UA_VariableAttributes_init(&var_attr);
 	char display[32];
-	sprintf(display, "Variable-%s\n", var_id);
+	sprintf(display, "Variable-%s\n", SPName);
 	var_attr.displayName = UA_LOCALIZEDTEXT("en_US", display);
-	var_attr.description = UA_LOCALIZEDTEXT("en_US", var_id);
+	var_attr.description = UA_LOCALIZEDTEXT("en_US", SPName);
 
 	UA_Variant_setScalar(&attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
 
