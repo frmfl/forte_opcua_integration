@@ -76,7 +76,8 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 		TDataConnectionPtr pao_DIConns = getCommFB()->m_apoDIConns;
 		for(int i = 0; i < paNumData; i++){
 			if(!pao_DIConns->isConnected()){
-				DEVLOG_INFO("OPC_UA Publisher DIs not connected\n");
+				DEVLOG_ERROR("OPC_UA Publisher DIs not connected\n");
+				retVal = UA_STATUSCODE_BADUNEXPECTEDERROR;
 			}else{
 				DEVLOG_INFO("OPC_UA Publisher DIs are connected, linked list not empty\n");
 
@@ -89,23 +90,45 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 				// check if Function Block is present in the Address Space otherwise create it
 				UA_StatusCode retValgetNode = COPC_UA_Handler::getInstance().getFBNodeId(sourceFB, returnFBNodeId);
 
-				/*
-				 * Parent object node (FB Node) was not present in the UA Address space -> create it.
-				 */
-				if(retValgetNode != UA_STATUSCODE_GOOD){
-					// create the parent object node in the address space
-					DEVLOG_INFO("Parent object node was not present in AS, creating it.\n")
-					UA_NodeId * returnObjNodeId = UA_NodeId_new();
-					UA_StatusCode retValcreateNode = COPC_UA_Handler::getInstance().createUAObjNode(sourceFB, returnObjNodeId);
-					if(retValcreateNode != UA_STATUSCODE_GOOD){
-						DEVLOG_INFO("Error creating node %s\n", retValcreateNode);
-						retVal = retValcreateNode;
-						return retVal;
-					}
+
+				if(retValgetNode == UA_STATUSCODE_GOOD){
+					// Parent object node (FB Node) was present in the UA Address Space.
+					DEVLOG_INFO("Function block node already present in the Address space.\n");
 					st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
+					retVal = UA_STATUSCODE_GOOD;
+
+				}else{
+					// Parent object node (FB Node) was not present in the UA Address space -> create it.
+					DEVLOG_INFO("Parent object node was not present in AS, create it.\n");
+					UA_NodeId * returnObjNodeId = UA_NodeId_new();
+					UA_StatusCode retValcreateObjNode = COPC_UA_Handler::getInstance().createUAObjNode(sourceFB, returnObjNodeId);
+
+					if(retValcreateObjNode == UA_STATUSCODE_GOOD){
+						// Node creation successful
+						DEVLOG_INFO("Object node %s successfully created.\n",returnObjNodeId->identifier);		//FIXME add objectnode identifier here
+						st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnObjNodeId;
+						retVal = UA_STATUSCODE_GOOD;
+
+					}else{
+						// Node creation not successful
+						DEVLOG_ERROR("Error creating node %s\n", retValcreateObjNode);
+						retVal = retValcreateObjNode;
+
+					}
 				}
-				//create the child node
-				st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnFBNodeId;
+
+				// Create SourcePort Node (Publishers SD Port) in UA Server Address Space
+				if(retVal = UA_STATUSCODE_GOOD){
+					// pass Function Block pointer
+					// pass SourcePort pointer
+					SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+					UA_NodeId * returnVarNodeId = UA_NodeId_new();
+					UA_StatusCode retValcreateVarNode = COPC_UA_Handler::getInstance().createUAVarNode(sourceFB, sourceRD, returnVarNodeId);
+
+				}
+
+
+
 
 
 
@@ -177,7 +200,7 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	if(0 == paSize){
 		//TODO change to an update now with out the need for a new allocation
 		UA_Server_writeValue()
-	    								sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
+	    																				sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
 	}else {
 		CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
 		for(unsigned int i = 0; i < paSize; i++){

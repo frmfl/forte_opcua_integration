@@ -260,8 +260,35 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* retu
 }
 
 
-UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, UA_NodeId * returnSPNodeId){
+UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId){
+	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+	const char* FBInstanceName = pCFB->getInstanceName();	// Name of the SourcePoint function block
+	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
 
+
+
+	UA_NodeId* returnNodeId = UA_NodeId_new();
+	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, FBNodeId, returnNodeId);		// read node of given ID
+	if(retVal != UA_STATUSCODE_GOOD){
+		return retVal;		// reading not successful
+		break;
+	}else{
+		retVal = UA_NodeId_copy(returnNodeId, returnFBNodeId);	// reading successful, return NodeId
+	};
+	return retVal;
+
+
+	SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
+
+	CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
+	const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
+
+	CStringDictionary::TStringId sourceRDTypeNameId = sourceFBInterface->m_aunDODataTypeNames[sourceRD.mPortId];
+	const char * sourceRDTypeName = CStringDictionary::getInstance().get(sourceRDTypeNameId);
+
+	char message[128];
+	sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
+	DEVLOG_INFO(message);
 }
 
 
@@ -292,37 +319,19 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId *
 	UA_NodeId * returnNodeId = UA_NodeId_new();
 	UA_StatusCode retVal = UA_Server_addObjectNode(mOPCUAServer, FBNodeId, parentNodeId, parentReferenceTypeId, objBrowseName, objTypeDefinition, obj_attr, NULL, returnNodeId);
 
-    if(retVal == UA_STATUSCODE_GOOD ){
-    	DEVLOG_INFO("Created new object %s \n", dispName);
-    	retVal = UA_NodeId_copy(returnNodeId, returnObjNodeId);
-    }else{
-        DEVLOG_INFO("Error creating object %s: %x\n", dispName, retVal);
-        return retVal;
-        break;
-    }
-    return retVal;
+	if(retVal == UA_STATUSCODE_GOOD ){
+		DEVLOG_INFO("Created new object %s \n", dispName);
+		retVal = UA_NodeId_copy(returnNodeId, returnObjNodeId);
+	}else{
+		DEVLOG_INFO("Error creating object %s: %x\n", dispName, retVal);
+		return retVal;
+		break;
+	}
+	return retVal;
 }
 
-/*
-UA_Boolean write_value = 0;
 
-int write_type = UA_NS0ID_BOOLEAN;
-//int write_type = UA_NS0ID_SBYTE;
-//int write_type = UA_NS0ID_BYTE;
-//int write_type = UA_NS0ID_INT16;
-//int write_type = UA_NS0ID_UINT16;
-//int write_type = UA_NS0ID_INT32;
-//int write_type = UA_NS0ID_UINT32;
-//int write_type = UA_NS0ID_INT64;
-//int write_type = UA_NS0ID_UINT64;
-//int write_type = UA_NS0ID_FLOAT;
-//int write_type = UA_NS0ID_DOUBLE;
- */
-
-
-
-void COPC_UA_Handler::createUAVarNode(char* fb_id, char* var_id){
-	//UA_NodeId createVariableNode(UA_Client *server, UA_NodeId parentNodeId, char *fb_id, char *var_id){
+UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId){
 	UA_NodeId obj_id;
 
 	/*
@@ -331,6 +340,7 @@ void COPC_UA_Handler::createUAVarNode(char* fb_id, char* var_id){
 					const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
 					const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 	 */
+	SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
 
 	char browse[32];
 	sprintf(browse, "%s.%s\n", fb_id, var_id);
@@ -373,6 +383,26 @@ void COPC_UA_Handler::createUAVarNode(char* fb_id, char* var_id){
 
 }
 }
+
+/*
+UA_Boolean write_value = 0;
+
+int write_type = UA_NS0ID_BOOLEAN;
+//int write_type = UA_NS0ID_SBYTE;
+//int write_type = UA_NS0ID_BYTE;
+//int write_type = UA_NS0ID_INT16;
+//int write_type = UA_NS0ID_UINT16;
+//int write_type = UA_NS0ID_INT32;
+//int write_type = UA_NS0ID_UINT32;
+//int write_type = UA_NS0ID_INT64;
+//int write_type = UA_NS0ID_UINT64;
+//int write_type = UA_NS0ID_FLOAT;
+//int write_type = UA_NS0ID_DOUBLE;
+ */
+
+
+
+
 
 
 
