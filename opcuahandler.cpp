@@ -99,9 +99,9 @@ void COPC_UA_Handler::destroyUAClient(UA_Client *client){
 	UA_Client_delete(client);
 }
 
-void COPC_UA_Handler::registerNode(Node *NodeAttr){
+void COPC_UA_Handler::registerNode(){
 
-
+/*
 	char *fb_name;
 	strcpy(fb_name, NodeAttr->fb_name);
 
@@ -274,7 +274,7 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoin
 	UA_NodeId SPNodeId = UA_NODEID_STRING_ALLOC(1, SPName);
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
-	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, SPName, returnNodeId);		// read node of given ID
+	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer,SPNodeId, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
 		break;
@@ -325,7 +325,6 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId *
 
 
 UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId){
-	UA_NodeId obj_id;
 
 	/*
 			UA_Server_addVariableNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
@@ -352,39 +351,36 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnection
 	UA_NodeId parentReferenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
 	char browsename[32];
 	sprintf(browsename, "%s\n", SPName);
-	UA_QualifiedName varBrowseName = UA_QUALIFIEDNAME(1, browsename);
+	UA_QualifiedName varBrowseName = UA_QUALIFIEDNAME(1, browse);
 	UA_NodeId varType = UA_NODEID_NULL;
+
+	UA_UInt32 myInteger = 42;
 
 	UA_VariableAttributes var_attr;
 	UA_VariableAttributes_init(&var_attr);
 	char display[32];
 	sprintf(display, "Variable-%s\n", SPName);
 	var_attr.displayName = UA_LOCALIZEDTEXT("en_US", display);
-	var_attr.description = UA_LOCALIZEDTEXT("en_US", SPName);
+	var_attr.description = UA_LOCALIZEDTEXT("en_US", "Variable Node");
+	UA_Variant_setScalar(&var_attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
 
-	UA_Variant_setScalar(&attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
-
-
-	UA_Variant_setScalarCopy(&var_attr.value, &write_value, &UA_TYPES[write_type]);
-
-	UA_StatusCode retval = UA_Server_addVariableNode(
-			server,
+	UA_StatusCode retVal = UA_Server_addVariableNode(
+			mOPCUAServer,
 			newVarNodeId,
 			parentNodeId,
 			parentReferenceTypeId,
-			UA_QUALIFIEDNAME(0, browse),
+			varBrowseName,
 			UA_NODEID_NULL, // no variable type
-			var_attr, &obj_id
-	);
-	if(retval == UA_STATUSCODE_GOOD )
+			var_attr, NULL, returnVarNodeId);
+
+	if(retVal == UA_STATUSCODE_GOOD )
 		printf("Created new object %s \n", browse);
 	else
-		printf("Error creating object : %x\n", retval);
+		printf("Error creating object : %x\n", retVal);
 
-	return obj_id;
+	return retVal;
+}
 
-}
-}
 
 /*
 UA_Boolean write_value = 0;

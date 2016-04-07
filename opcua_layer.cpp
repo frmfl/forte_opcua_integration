@@ -13,7 +13,7 @@
 using namespace forte::com_infra;
 
 
-COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB),  m_ppstOPCUAItem(0){
+COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB){
 	// constructor list initialization
 }
 
@@ -39,6 +39,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 	}else{
 		numData = getCommFB()->getNumSD();
 		dataArray = getCommFB()->getSDs();
+
 	}
 
 	// for OPC_UA also pass the parameters necessary to locate the variable at the correct
@@ -52,11 +53,12 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 
 
 EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, char* paLayerParameter){
-	EComResponse retVal = e_InitOk;
+	EComResponse retValEcom = e_InitOk;
+	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	if(0 == paNumData){
 		//handle pure event message
-		retVal = e_InitInvalidId;
-		break;
+		retValEcom = e_InitInvalidId;
+
 	} else{
 		// allocate memory for an array of pointers to pointers pointing to values of type NodeId
 		st_ParentChildNodeId.ppNodeId_ParentFB = new UA_NodeId *[paNumData];
@@ -65,31 +67,30 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 		memset(st_ParentChildNodeId.ppNodeId_ParentFB, 0, sizeof(UA_NodeId *) * paNumData);		//!< initialize pointer memory: multiply size of struct with amount
 		memset(st_ParentChildNodeId.ppNodeId_SrcPoint, 0, sizeof(UA_NodeId *) * paNumData);		//!< initialize pointer memory: multiply size of struct with amount
 
-		char* nextParam;
-
 		/* check for FBParent existence
 		 * create FBParent Node
 		 * check for SourcePoint Node existing
 		 * create SourcePoint Node
 		 */
 
-		TDataConnectionPtr pao_DIConns = getCommFB()->m_apoDIConns;
+
 		for(int i = 0; i < paNumData; i++){
-			if(!pao_DIConns->isConnected()){
-				DEVLOG_ERROR("OPC_UA Publisher DIs not connected\n");
+			CDataConnection* pC_DIConn = getCommFB()->getDIConnection(getCommFB()->getFBInterfaceSpec()->m_aunDINames[i]); 	//!< pointer to a Connection Object
+			if(pC_DIConn->isConnected()){
+				// implement handling for pure event connections
+				DEVLOG_ERROR("OPC_UA Publisher SD-Port %i not connected\n", i);
 				retVal = UA_STATUSCODE_BADUNEXPECTEDERROR;
 			}else{
 				DEVLOG_INFO("OPC_UA Publisher DIs are connected, linked list not empty\n");
 
-				// loop over all SD-ports and retrieve Source FB Information
-				SConnectionPoint& sourceRD = pao_DIConns[i].getSourceId();
-
-				CFunctionBlock *sourceFB = sourceRD.mFB;	// pointer to Parent Function Block
+				// retrieve connection source point (SP)
+				const SConnectionPoint* sourceRD = pC_DIConn->getSourceId();
+				s
+				CFunctionBlock *sourceFB = sourceRD->mFB;	// pointer to Parent Function Block
 				UA_NodeId* returnFBNodeId = UA_NodeId_new();
 
 				// check if Function Block is present in the Address Space otherwise create it
 				UA_StatusCode retValgetNode = COPC_UA_Handler::getInstance().getFBNodeId(sourceFB, returnFBNodeId);
-
 
 				if(retValgetNode == UA_STATUSCODE_GOOD){
 					// Parent object node (FB Node) was present in the UA Address Space.
@@ -119,7 +120,7 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 				UA_NodeId* returnSPNodeId = UA_NodeId_new();
 				// check if Variable Node is present in Address Space otherwise create it.
-				UA_StatusCode retValgetNode = COPC_UA_Handler::getInstance().getSPNodeId(sourceFB, sourceRD, returnSPNodeId);
+				 retValgetNode = COPC_UA_Handler::getInstance().getSPNodeId(sourceFB, sourceRD, returnSPNodeId);
 
 				if(retValgetNode == UA_STATUSCODE_GOOD){
 					// SourcePoint node (SP Node) was present in the UA Address Space.
@@ -150,8 +151,10 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 			}
 		}
 	}
+	//FIXME: mapping from UA_StatusCode to EComResponse type!
+	retValEcom = e_InitOk;
+	return retValEcom;
 }
-
 
 
 
@@ -216,10 +219,11 @@ return retVal;
 
 
 EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
-	EComResponse retVal = e_ProcessDataOk;
+
+
 
 	EComResponse retVal = e_ProcessDataOk;
-
+/*
 	if(0 == paSize){
 		//TODO change to an update now with out the need for a new allocation
 		UA_Server_writeValue()
@@ -232,8 +236,9 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	}
 	return retVal;
 }
-
+*/
 return retVal;
+
 }
 
 

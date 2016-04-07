@@ -22,7 +22,7 @@ public:
 	forte::com_infra::EComResponse sendData(void* pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse recvData(const void * pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse processInterrupt();
-	struct ASNodeId{std::string fb_name; std::string port_name; std::string port_id;} NodeAttr;
+
 
 private:
 	forte::com_infra::EComResponse openConnection(char * paLayerParameter);
@@ -33,5 +33,3 @@ private:
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUA_LAYER_H_ */
-
-struct of two arrays each containing pointers to node ids

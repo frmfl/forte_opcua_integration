@@ -12,6 +12,7 @@
 #include <singlet.h>
 #include <thread.h>
 #include <extevhan.h>
+#include <conn.h>
 
 struct UA_Server;	//forward declaration
 
@@ -21,9 +22,8 @@ class COPC_UA_Handler : public CExternalEventHandler, public CThread{
 
 public:
 
-	CIEC_ANY areturnFBID[];
 
-    /* functions needed for the external event handler interface */
+    /* functions for the external event handler interface */
     void enableHandler(void);
     void disableHandler(void);
     void setPriority(int pa_nPriority);
@@ -83,7 +83,7 @@ private:
 	void createUAClient(UA_ClientConfig m_client_config);
 
 
-	void registerNode(struct Node *NodeAttr);
+	void registerNode();
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUAHANDLER_H_ */
