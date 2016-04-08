@@ -84,9 +84,12 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 				DEVLOG_INFO("OPC_UA Publisher DIs are connected, linked list not empty\n");
 
 				// retrieve connection source point (SP)
-				const SConnectionPoint* sourceRD = pC_DIConn->getSourceId();
-				s
-				CFunctionBlock *sourceFB = sourceRD->mFB;	// pointer to Parent Function Block
+				// const_cast<const Bar*>(this)->getProcess().doSomeWork();
+				const SConnectionPoint& sourceRD = const_cast<const CDataConnection*>(pC_DIConn)->getSourceId();
+				//const_cast<CDataConnection*>
+				//const SConnectionPoint& sourceRD = pC_DIConn->getSourceId();
+
+				CFunctionBlock *sourceFB = sourceRD.mFB;	// pointer to Parent Function Block
 				UA_NodeId* returnFBNodeId = UA_NodeId_new();
 
 				// check if Function Block is present in the Address Space otherwise create it
@@ -120,7 +123,8 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 				UA_NodeId* returnSPNodeId = UA_NodeId_new();
 				// check if Variable Node is present in Address Space otherwise create it.
-				 retValgetNode = COPC_UA_Handler::getInstance().getSPNodeId(sourceFB, sourceRD, returnSPNodeId);
+				retValgetNode = COPC_UA_Handler::getInstance().getSPNodeId(sourceFB, const_cast<SConnectionPoint&>(sourceRD), returnSPNodeId);
+				 //retValgetNode = COPC_UA_Handler::getInstance().getSPNodeId(sourceFB, sourceRD, returnSPNodeId);
 
 				if(retValgetNode == UA_STATUSCODE_GOOD){
 					// SourcePoint node (SP Node) was present in the UA Address Space.
@@ -133,7 +137,7 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 					// pass Function Block pointer
 					// pass SourcePort reference
 					UA_NodeId * returnVarNodeId = UA_NodeId_new();
-					UA_StatusCode retValcreateVarNode = COPC_UA_Handler::getInstance().createUAVarNode(sourceFB, sourceRD, returnVarNodeId);
+					UA_StatusCode retValcreateVarNode = COPC_UA_Handler::getInstance().createUAVarNode(sourceFB, const_cast<SConnectionPoint&>(sourceRD), returnVarNodeId);
 
 					if(retValcreateVarNode == UA_STATUSCODE_GOOD){
 						// Node creation successful

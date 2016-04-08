@@ -8,7 +8,6 @@
 #include "opcuahandler.h"
 #include "devlog.h"
 #include <string.h>
-
 #include <cstdbool>
 
 
@@ -22,7 +21,7 @@ UA_ServerConfig COPC_UA_Handler::configureUAServer() {
 	m_server_config.networkLayersSize = 1;
 	m_server_config.logger = Logger_Stdout;
 	m_server_networklayer = UA_ServerNetworkLayerTCP(UA_ConnectionConfig_standard, 16664);
-	m_server_config.networkLayers = m_server_networklayer;
+	m_server_config.networkLayers = &m_server_networklayer;
 	return m_server_config;
 }
 
@@ -262,12 +261,9 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* retu
 
 UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-	/*const char* FBInstanceName = pCFB->getInstanceName();	// Name of the SourcePoint function block
-	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
-	 */
 
 	// Important Comment: Reading the node without reference to parent node id, unknown if this works.
-	SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
+	const SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
 
 	CStringDictionary::TStringId SPNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
 	const char * SPName = CStringDictionary::getInstance().get(SPNameId);
@@ -332,13 +328,13 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnection
 					const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
 					const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 	 */
-	SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
+	const SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
 
 	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
 	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId);
 
 
-	SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
+	const SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
 
 	CStringDictionary::TStringId SPNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
 	const char * SPName = CStringDictionary::getInstance().get(SPNameId);
@@ -399,6 +395,20 @@ int write_type = UA_NS0ID_BOOLEAN;
  */
 
 
+/*enum EComResponse{
+  e_Nothing = 0,
+  e_InitOk = e_InitPositive | e_Ok,
+  e_ProcessDataOk = e_ProcessDataPositive | e_Ok,
+  e_InitInvalidId = e_InitNegative | e_InvalidId,
+  e_InitTerminated = e_InitNegative | e_Terminated,
+  e_ProcessDataInvalidObject = e_ProcessDataNegative | e_InvalidObject,
+  e_ProcessDataDataTypeError = e_ProcessDataNegative | e_DataTypeError,
+  e_ProcessDataInhibited = e_ProcessDataNegative | e_Inhibited,
+  e_ProcessDataNoSocket = e_ProcessDataNegative | e_NoSocket,
+  e_ProcessDataSendFailed = e_ProcessDataNegative | e_SendFailed,
+  e_ProcessDataRecvFaild = e_ProcessDataNegative | e_RecvFailed
+
+*/
 
 
 

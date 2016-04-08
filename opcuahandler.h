@@ -15,6 +15,8 @@
 #include <conn.h>
 
 struct UA_Server;	//forward declaration
+struct SConnectionPoint;
+struct SFBInterfaceSpec;
 
 
 class COPC_UA_Handler : public CExternalEventHandler, public CThread{
@@ -65,8 +67,6 @@ private:
     // OPC_UA Client and configuration
     UA_Client * mOPCUAClient;
     UA_ClientConfig m_client_config;
-
-
 
     volatile UA_Boolean* mbServerRunning;
     UA_ServerNetworkLayer m_server_networklayer;
