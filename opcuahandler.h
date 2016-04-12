@@ -14,6 +14,7 @@
 #include <extevhan.h>
 #include <conn.h>
 #include <funcbloc.h>
+#include <stdio.h>
 
 //struct UA_Server;	//forward declaration
 //struct SConnectionPoint;

@@ -52,29 +52,29 @@ COPC_UA_Handler::~COPC_UA_Handler() {
 	destroyUAClient(getClient());
 }
 
-virtual void COPC_UA_Handler::run(){
+void COPC_UA_Handler::run(){
 	UA_StatusCode retVal = UA_Server_run(mOPCUAServer, mbServerRunning);	// server keeps iterating as long as running is true;
 	COPC_UA_Handler::runUAServer();
 	DEVLOG_INFO("UA_Server run status code %s", retVal);
 }
 
 void COPC_UA_Handler::enableHandler(void){
-  start();
+	start();
 }
 
 void COPC_UA_Handler::disableHandler(void){
-  COPC_UA_Handler::stopUAServer();
-  end();
+	COPC_UA_Handler::stopUAServer();
+	end();
 }
 
 void COPC_UA_Handler::setPriority(int){
-  //currently we are doing nothing here.
-  //TODO We should adjust the thread priority.
+	//currently we are doing nothing here.
+	//TODO We should adjust the thread priority.
 }
 
 int COPC_UA_Handler::getPriority(void) const{
-  //the same as for setPriority
-  return 0;
+	//the same as for setPriority
+	return 0;
 }
 
 UA_Server * COPC_UA_Handler::getServer(){
@@ -119,7 +119,7 @@ void COPC_UA_Handler::destroyUAClient(UA_Client *client){
 
 void COPC_UA_Handler::registerNode(){
 
-/*
+	/*
 	char *fb_name;
 	strcpy(fb_name, NodeAttr->fb_name);
 
@@ -273,7 +273,6 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoin
 	retVal = UA_Server_readNodeId(mOPCUAServer,SPNodeId, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
-		break;
 	}else{
 		retVal = UA_NodeId_copy(returnNodeId, returnSPNodeId);	// reading successful, return NodeId
 	};
@@ -302,11 +301,12 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId *
 	char dispName[32];
 	sprintf(dispName, "FB-%s\n", FBInstanceName);
 	obj_attr.displayName = UA_LOCALIZEDTEXT("en_US", dispName);
-	char descpName[];
+	char descpName[64];
 	sprintf(descpName, "Object node of FB-%s, origin: Publisher\n", FBInstanceName);
-	obj_attr.description = UA_LocalizedText("en_US", descpName);
+	//sprintf(descpName, "Publisher FB");
+	obj_attr.description =  UA_LOCALIZEDTEXT("en_US", descpName);
 	UA_NodeId * returnNodeId = UA_NodeId_new();
-	UA_StatusCode retVal = UA_Server_addObjectNode(mOPCUAServer, FBNodeId, parentNodeId, parentReferenceTypeId, objBrowseName, objTypeDefinition, obj_attr, NULL, returnNodeId);
+	retVal = UA_Server_addObjectNode(mOPCUAServer, FBNodeId, parentNodeId, parentReferenceTypeId, objBrowseName, objTypeDefinition, obj_attr, NULL, returnNodeId);
 
 	if(retVal == UA_STATUSCODE_GOOD ){
 		DEVLOG_INFO("Created new object %s \n", dispName);
@@ -314,7 +314,7 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId *
 	}else{
 		DEVLOG_INFO("Error creating object %s: %x\n", dispName, retVal);
 		return retVal;
-		break;
+
 	}
 	return retVal;
 }
@@ -328,7 +328,7 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnection
 					const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
 					const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
 	 */
-	const SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
+
 
 	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
 	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId);
@@ -408,7 +408,7 @@ int write_type = UA_NS0ID_BOOLEAN;
   e_ProcessDataSendFailed = e_ProcessDataNegative | e_SendFailed,
   e_ProcessDataRecvFaild = e_ProcessDataNegative | e_RecvFailed
 
-*/
+ */
 
 
 
