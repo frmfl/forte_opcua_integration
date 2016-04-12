@@ -11,7 +11,6 @@
 #include <cstdbool>
 
 
-UA_StatusCode statCode;
 
 DEFINE_SINGLETON(COPC_UA_Handler);
 
@@ -38,6 +37,46 @@ void COPC_UA_Handler::createUAServer(UA_ServerConfig m_server_config){
 	mOPCUAServer = UA_Server_new(m_server_config);	// create the server specified in config
 }
 
+COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(), mbServerRunning(0) {
+	configureUAServer(); 	// configure a standard server
+	createUAServer(m_server_config);	// create a OPC_UA Server with specified configuration
+
+	// OPTION: add a namespace in xml format to the server containing the application configuration.
+	//UA_Server_addExternalNamespace()
+}
+
+COPC_UA_Handler::~COPC_UA_Handler() {
+	stopUAServer();
+	UA_Server_delete(mOPCUAServer);
+	m_server_networklayer.deleteMembers(&m_server_networklayer);
+	destroyUAClient(getClient());
+}
+
+virtual void COPC_UA_Handler::run(){
+	UA_StatusCode retVal = UA_Server_run(mOPCUAServer, mbServerRunning);	// server keeps iterating as long as running is true;
+	COPC_UA_Handler::runUAServer();
+	DEVLOG_INFO("UA_Server run status code %s", retVal);
+}
+
+void COPC_UA_Handler::enableHandler(void){
+  start();
+}
+
+void COPC_UA_Handler::disableHandler(void){
+  COPC_UA_Handler::stopUAServer();
+  end();
+}
+
+void COPC_UA_Handler::setPriority(int){
+  //currently we are doing nothing here.
+  //TODO We should adjust the thread priority.
+}
+
+int COPC_UA_Handler::getPriority(void) const{
+  //the same as for setPriority
+  return 0;
+}
+
 UA_Server * COPC_UA_Handler::getServer(){
 	return mOPCUAServer;
 }
@@ -46,26 +85,6 @@ UA_Client * COPC_UA_Handler::getClient(){
 	return mOPCUAClient;
 }
 
-//UA_ServerNetworkLayer()
-
-
-COPC_UA_Handler::COPC_UA_Handler() : m_server_config(0), m_server_networklayer(0), mbServerRunning(0) {
-	configureUAServer(); 	// configure a standard server
-	createUAServer(m_server_config);	// create
-	runUAServer();
-	UA_StatusCode retVal = UA_Server_run(mOPCUAServer, mbServerRunning);	// server keeps iterating as long as running is true
-	DEVLOG_INFO("UA_Server run status code %s", retVal);
-
-	//add a namespace in xml format to the server containing the application configuration.
-	//UA_Server_addExternalNamespace()
-}
-
-COPC_UA_Handler::~COPC_UA_Handler() {
-	stopUAServer();
-	UA_Server_delete(mOPCUAServer);
-	m_server_networklayer.deleteMembers(m_server_networklayer);
-	destroyUAClient(getClient());
-}
 
 void COPC_UA_Handler::runUAServer(){
 	*mbServerRunning = UA_Boolean (true);
@@ -173,25 +192,7 @@ void COPC_UA_Handler::registerNode(){
 	 */
 }
 
-void COPC_UA_Handler::enableHandler(void){
 
-	//FIXME do nothing
-}
-
-void COPC_UA_Handler::disableHandler(void){
-
-	//FIXME implement
-}
-
-void COPC_UA_Handler::setPriority(int pa_nPriority){
-
-	//FIXME to implement
-}
-
-int COPC_UA_Handler::getPriority(void) const{
-
-	return 0;
-}
 
 /*
  * Get Function Block Node Id from the pointer to a CFunctionBlock.
@@ -205,10 +206,9 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* retu
 	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
-	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer, FBNodeId, returnNodeId);		// read node of given ID
+	retVal = UA_Server_readNodeId(mOPCUAServer, FBNodeId, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
-		break;
 	}else{
 		retVal = UA_NodeId_copy(returnNodeId, returnFBNodeId);	// reading successful, return NodeId
 	};
@@ -270,7 +270,7 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoin
 	UA_NodeId SPNodeId = UA_NODEID_STRING_ALLOC(1, SPName);
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
-	UA_StatusCode retVal = UA_Server_readNodeId(mOPCUAServer,SPNodeId, returnNodeId);		// read node of given ID
+	retVal = UA_Server_readNodeId(mOPCUAServer,SPNodeId, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
 		break;
