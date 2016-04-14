@@ -6,7 +6,6 @@
  */
 
 #include "opcuahandler.h"
-#include "devlog.h"
 #include <string.h>
 #include <cstdbool>
 
@@ -200,7 +199,7 @@ void COPC_UA_Handler::registerNode(){
  * exists in the address space of the OPC-UA Server.
  */
 
-UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* returnFBNodeId){
+UA_StatusCode COPC_UA_Handler::getFBNodeId(const CFunctionBlock* pCFB, UA_NodeId* returnFBNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	const char* FBInstanceName = pCFB->getInstanceName();	// Name of the SourcePoint function block
 	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
@@ -259,7 +258,7 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(CFunctionBlock* pCFB, UA_NodeId* retu
 }
 
 
-UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId){
+UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 
 	// Important Comment: Reading the node without reference to parent node id, unknown if this works.
@@ -284,7 +283,7 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(CFunctionBlock *pCFB, SConnectionPoin
  * a control function block. If creation successful the NodeId is returned otherwise
  * UA_StatusCode from node creation with error message.
  */
-UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId){
+UA_StatusCode COPC_UA_Handler::createUAObjNode(const CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId){
 
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
@@ -320,7 +319,7 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(CFunctionBlock* pCFB, UA_NodeId *
 }
 
 
-UA_StatusCode COPC_UA_Handler::createUAVarNode(CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId){
+UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId){
 
 	/*
 			UA_Server_addVariableNode(UA_Server *server, const UA_NodeId requestedNewNodeId,

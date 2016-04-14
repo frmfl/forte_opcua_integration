@@ -13,8 +13,9 @@
 #include <thread.h>
 #include <extevhan.h>
 #include <conn.h>
-#include <funcbloc.h>
+#include "funcbloc.h"
 #include <stdio.h>
+#include "../../arch/devlog.h"
 
 //struct UA_Server;	//forward declaration
 //struct SConnectionPoint;
@@ -36,10 +37,10 @@ public:
 	UA_Server * getServer(void);
 	UA_Client * getClient(void);
 	void startupUAServer();
-	UA_StatusCode getFBNodeId(CFunctionBlock *pCFB, UA_NodeId* returnFBNodeId);		// get function block (FB) NodeId
-	UA_StatusCode getSPNodeId(CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId);		// get source point (SP) NodeId
-	UA_StatusCode createUAVarNode(CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
-	UA_StatusCode createUAObjNode(CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
+	UA_StatusCode getFBNodeId(const CFunctionBlock *pCFB, UA_NodeId* returnFBNodeId);		// get function block (FB) NodeId
+	UA_StatusCode getSPNodeId(const CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId);		// get source point (SP) NodeId
+	UA_StatusCode createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
+	UA_StatusCode createUAObjNode(const CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
 
 protected:
 
