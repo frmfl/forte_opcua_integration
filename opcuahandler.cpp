@@ -34,26 +34,28 @@ void COPC_UA_Handler::createUAClient(UA_ClientConfig m_client_config){
 
 void COPC_UA_Handler::createUAServer(UA_ServerConfig m_server_config){
 	mOPCUAServer = UA_Server_new(m_server_config);	// create the server specified in config
+
 }
 
 COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(), mbServerRunning(0) {
 	configureUAServer(); 	// configure a standard server
 	createUAServer(m_server_config);	// create a OPC_UA Server with specified configuration
+	COPC_UA_Handler::setServerRunning();
+	COPC_UA_Handler::start();	// run UA server
 
 	// OPTION: add a namespace in xml format to the server containing the application configuration.
 	//UA_Server_addExternalNamespace()
 }
 
 COPC_UA_Handler::~COPC_UA_Handler() {
-	stopUAServer();
+	stopServerRunning();
 	UA_Server_delete(mOPCUAServer);
 	m_server_networklayer.deleteMembers(&m_server_networklayer);
 	destroyUAClient(getClient());
 }
 
-void COPC_UA_Handler::run(){
+void COPC_UA_Handler::startupUAServer(){
 	UA_StatusCode retVal = UA_Server_run(mOPCUAServer, mbServerRunning);	// server keeps iterating as long as running is true;
-	COPC_UA_Handler::runUAServer();
 	DEVLOG_INFO("UA_Server run status code %s", retVal);
 }
 
@@ -62,7 +64,7 @@ void COPC_UA_Handler::enableHandler(void){
 }
 
 void COPC_UA_Handler::disableHandler(void){
-	COPC_UA_Handler::stopUAServer();
+	COPC_UA_Handler::stopServerRunning();
 	end();
 }
 
@@ -85,7 +87,7 @@ UA_Client * COPC_UA_Handler::getClient(){
 }
 
 
-void COPC_UA_Handler::runUAServer(){
+void COPC_UA_Handler::setServerRunning(){
 	*mbServerRunning = UA_Boolean (true);
 	//	char mylogmsg = "Value of boolean 'running' ";
 	//	logMessage(E_INFO, &mylogmsg, (char*) mbServerRunning);
@@ -94,7 +96,7 @@ void COPC_UA_Handler::runUAServer(){
 	//FIXME add forward declaration of enum to obtain server status information
 }
 
-void COPC_UA_Handler::stopUAServer(){
+void COPC_UA_Handler::stopServerRunning(){
 	*mbServerRunning = UA_Boolean (false);
 	//	char mylogmsg = "Value of boolean 'stop' ";
 	//	logMessage(E_INFO, &mylogmsg, (char*) mbServerRunning);
@@ -192,7 +194,6 @@ void COPC_UA_Handler::registerNode(){
 }
 
 
-
 /*
  * Get Function Block Node Id from the pointer to a CFunctionBlock.
  * Method is used to check if a not to the pointed function block already
@@ -278,7 +279,6 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 	return retVal;
 }
 
-
 /* Function creates an address space obeject node defined by given pointer to
  * a control function block. If creation successful the NodeId is returned otherwise
  * UA_StatusCode from node creation with error message.
@@ -287,7 +287,9 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(const CFunctionBlock* pCFB, UA_No
 
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	CStringDictionary::TStringId sourceFBNameId = pCFB->getInstanceNameId();
-	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId); 		// Name of the SourcePoint function block
+
+	// Name of the SourcePoint function block
+	const char* FBInstanceName = CStringDictionary::getInstance().get(sourceFBNameId);
 
 	UA_NodeId FBNodeId = UA_NODEID_STRING_ALLOC(1, FBInstanceName);		// Create new FBNodeId from c string
 	UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
@@ -307,7 +309,7 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(const CFunctionBlock* pCFB, UA_No
 	UA_NodeId * returnNodeId = UA_NodeId_new();
 	retVal = UA_Server_addObjectNode(mOPCUAServer, FBNodeId, parentNodeId, parentReferenceTypeId, objBrowseName, objTypeDefinition, obj_attr, NULL, returnNodeId);
 
-	if(retVal == UA_STATUSCODE_GOOD ){
+	if(retVal == UA_STATUSCODE_GOOD){
 		DEVLOG_INFO("Created new object %s \n", dispName);
 		retVal = UA_NodeId_copy(returnNodeId, returnObjNodeId);
 	}else{

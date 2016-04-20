@@ -36,7 +36,7 @@ public:
 
 	UA_Server * getServer(void);
 	UA_Client * getClient(void);
-	void startupUAServer();
+
 	UA_StatusCode getFBNodeId(const CFunctionBlock *pCFB, UA_NodeId* returnFBNodeId);		// get function block (FB) NodeId
 	UA_StatusCode getSPNodeId(const CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId);		// get source point (SP) NodeId
 	UA_StatusCode createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
@@ -76,9 +76,11 @@ private:
 	volatile UA_Boolean* mbServerRunning;
 	UA_ServerNetworkLayer m_server_networklayer;
 	//static UA_StatusCode mStatusCode;
+	void startupUAServer();
 
-	void runUAServer();
-	void stopUAServer();
+
+	void setServerRunning();
+	void stopServerRunning();
 	UA_StatusCode connectUAClient(UA_Client* client);
 	void destroyUAClient(UA_Client * client);
 	//static forte::com_infra::EComResponse m_eComResponse;
@@ -87,7 +89,8 @@ private:
 	void createUAServer(UA_ServerConfig m_server_config);
 	void createUAClient(UA_ClientConfig m_client_config);
 
-	virtual void run();
+	// implementation of thread.h virtual method start
+	virtual void run() = 0;
 
 	void registerNode();
 };

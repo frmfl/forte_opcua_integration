@@ -109,7 +109,9 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 				if(retValcreateObjNode == UA_STATUSCODE_GOOD){
 					// Node creation successful
-					DEVLOG_INFO("Object node %s successfully created.\n",returnObjNodeId->identifier);		//FIXME add objectnode identifier here
+					returnObjNodeId->identifier;
+					//DEVLOG_INFO("Object node %s successfully created.\n",returnObjNodeId->identifier);		//FIXME add objectnode identifier here
+					DEVLOG_INFO("Object node successfully created.\n"); //FIXME convert returnObjNode identifier to string ->then output
 					st_ParentChildNodeId.ppNodeId_ParentFB[i] = returnObjNodeId;
 					retVal = UA_STATUSCODE_GOOD;
 
