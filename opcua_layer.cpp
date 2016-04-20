@@ -143,7 +143,8 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 				if(retValcreateVarNode == UA_STATUSCODE_GOOD){
 					// Node creation successful
-					DEVLOG_INFO("Object node %s successfully created.\n",returnVarNodeId->identifier);		//FIXME add variablenode identifier here
+					//DEVLOG_INFO("Object node %s successfully created.\n",returnVarNodeId->identifier);		//FIXME add variablenode identifier here
+					DEVLOG_INFO("Object node successfully created. \n");
 					st_ParentChildNodeId.ppNodeId_SrcPoint[i] = returnVarNodeId;
 					retVal = UA_STATUSCODE_GOOD;
 

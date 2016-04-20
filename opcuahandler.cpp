@@ -37,11 +37,16 @@ void COPC_UA_Handler::createUAServer(UA_ServerConfig m_server_config){
 
 }
 
-COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(), mbServerRunning(0) {
+COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
+
 	configureUAServer(); 	// configure a standard server
 	createUAServer(m_server_config);	// create a OPC_UA Server with specified configuration
-	COPC_UA_Handler::setServerRunning();
-	COPC_UA_Handler::start();	// run UA server
+	setServerRunning();		// set server loop flag
+
+	if(!isAlive()){
+	      //thread is not running start it
+	      start();
+	    }
 
 	// OPTION: add a namespace in xml format to the server containing the application configuration.
 	//UA_Server_addExternalNamespace()
@@ -54,7 +59,7 @@ COPC_UA_Handler::~COPC_UA_Handler() {
 	destroyUAClient(getClient());
 }
 
-void COPC_UA_Handler::startupUAServer(){
+void COPC_UA_Handler::run(){
 	UA_StatusCode retVal = UA_Server_run(mOPCUAServer, mbServerRunning);	// server keeps iterating as long as running is true;
 	DEVLOG_INFO("UA_Server run status code %s", retVal);
 }
@@ -88,23 +93,11 @@ UA_Client * COPC_UA_Handler::getClient(){
 
 
 void COPC_UA_Handler::setServerRunning(){
-	*mbServerRunning = UA_Boolean (true);
-	//	char mylogmsg = "Value of boolean 'running' ";
-	//	logMessage(E_INFO, &mylogmsg, (char*) mbServerRunning);
-
-	//UA_StatusCode retval = UA_Server_run(mOPCUAServer, nThreads, mbServerRunning);
-	//FIXME add forward declaration of enum to obtain server status information
+	*mbServerRunning = UA_TRUE;
 }
 
 void COPC_UA_Handler::stopServerRunning(){
-	*mbServerRunning = UA_Boolean (false);
-	//	char mylogmsg = "Value of boolean 'stop' ";
-	//	logMessage(E_INFO, &mylogmsg, (char*) mbServerRunning);
-	//nThreads = 1;
-	//UA_StatusCode statCode;
-	//UA_StatusCode retval = UA_Server_run(mOPCUAServer, mbServerRunning);
-	//return statCode;
-	//FIXME add forward declaration of enum to obtain server status information
+	*mbServerRunning = UA_FALSE;
 }
 
 UA_StatusCode COPC_UA_Handler::connectUAClient(UA_Client* client){

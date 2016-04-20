@@ -72,11 +72,9 @@ private:
 	// OPC_UA Client and configuration
 	UA_Client * mOPCUAClient;
 	UA_ClientConfig m_client_config;
-
-	volatile UA_Boolean* mbServerRunning;
+	volatile UA_Boolean* mbServerRunning = new UA_Boolean(UA_TRUE);
 	UA_ServerNetworkLayer m_server_networklayer;
 	//static UA_StatusCode mStatusCode;
-	void startupUAServer();
 
 
 	void setServerRunning();
@@ -90,7 +88,7 @@ private:
 	void createUAClient(UA_ClientConfig m_client_config);
 
 	// implementation of thread.h virtual method start
-	virtual void run() = 0;
+	virtual void run();
 
 	void registerNode();
 };
