@@ -1,9 +1,15 @@
-/*
- * opcuahandler.h
- *
- *  Created on: 02.03.2016
- *      Author: florian
- */
+/*******************************************************************************
+  * Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
+  * All rights reserved. This program and the accompanying materials
+  * are made available under the terms of the Eclipse Public License v1.0
+  * which accompanies this distribution, and is available at
+  * http://www.eclipse.org/legal/epl-v10.html
+  *
+  * Contributors:
+  *    Florian Froschermeier
+  *      - initial integration of the OPC-UA protocol
+  *******************************************************************************/
+
 
 #ifndef SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
 #define SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
@@ -70,8 +76,6 @@ private:
 	UA_ServerConfig m_server_config;
 
 	// OPC_UA Client and configuration
-	UA_Client * mOPCUAClient;
-	UA_ClientConfig m_client_config;
 	volatile UA_Boolean* mbServerRunning = new UA_Boolean(UA_TRUE);
 	UA_ServerNetworkLayer m_server_networklayer;
 	//static UA_StatusCode mStatusCode;
@@ -79,13 +83,9 @@ private:
 
 	void setServerRunning();
 	void stopServerRunning();
-	UA_StatusCode connectUAClient(UA_Client* client);
-	void destroyUAClient(UA_Client * client);
 	//static forte::com_infra::EComResponse m_eComResponse;
-	UA_ServerConfig configureUAServer();
-	UA_ClientConfig configureUAClient();
-	void createUAServer(UA_ServerConfig m_server_config);
-	void createUAClient(UA_ClientConfig m_client_config);
+	void configureUAServer();
+	void createUAServer();
 
 	// implementation of thread.h virtual method start
 	virtual void run();

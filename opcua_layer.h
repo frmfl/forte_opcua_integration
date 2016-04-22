@@ -1,9 +1,15 @@
-/*
- * opcua_layer.h
- *
- *  Created on: 01.03.2016
- *      Author: florian
- */
+/*******************************************************************************
+  * Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
+  * All rights reserved. This program and the accompanying materials
+  * are made available under the terms of the Eclipse Public License v1.0
+  * which accompanies this distribution, and is available at
+  * http://www.eclipse.org/legal/epl-v10.html
+  *
+  * Contributors:
+  *    Florian Froschermeier
+  *      - initial integration of the OPC-UA protocol
+  *******************************************************************************/
+
 
 #ifndef SRC_MODULES_OPC_UA_OPCUA_LAYER_H_
 #define SRC_MODULES_OPC_UA_OPCUA_LAYER_H_
