@@ -366,21 +366,108 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConn
 }
 
 
-/*
-UA_Boolean write_value = 0;
+// ((CIEC_BOOL &) paDataPoint).operator bool());
 
-int write_type = UA_NS0ID_BOOLEAN;
-//int write_type = UA_NS0ID_SBYTE;
-//int write_type = UA_NS0ID_BYTE;
-//int write_type = UA_NS0ID_INT16;
-//int write_type = UA_NS0ID_UINT16;
-//int write_type = UA_NS0ID_INT32;
-//int write_type = UA_NS0ID_UINT32;
-//int write_type = UA_NS0ID_INT64;
-//int write_type = UA_NS0ID_UINT64;
-//int write_type = UA_NS0ID_FLOAT;
-//int write_type = UA_NS0ID_DOUBLE;
- */
+void COPC_UA_Handler::updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint){
+	UA_Variant* pNodeValue;		// new Variant object
+	switch (paDataPoint.getDataTypeID()){
+	case CIEC_ANY::e_BOOL:
+		// UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_BOOLEAN]);
+		//UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, ((CIEC_BOOL &) paDataPoint).operator bool());
+		break;
+	case CIEC_ANY::e_SINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_SBYTE]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_USINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_BYTE]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_INT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_INT16]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_UINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT16]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_DINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_INT32]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_UDINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT32]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_LINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_INT64]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_ULINT:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT64]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_BYTE:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_BYTE]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_WORD:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT16]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_DWORD:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT32]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_LWORD:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT64]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_REAL:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_FLOAT]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_LREAL:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DOUBLE]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_STRING:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_STRING]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_WSTRING:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_STRING]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+		//  case CIEC_ANY::e_CHAR:		not defined in forte
+		//  case CIEC_ANY::e_WCHAR:		not defined in forte
+	case CIEC_ANY::e_DATE_AND_TIME:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DATETIME]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_DATE:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DATETIME]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_TIME_OF_DAY:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DATETIME]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_TIME:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DOUBLE]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	case CIEC_ANY::e_ANY:
+		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_NS0ID_BASEDATATYPE]);
+		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
+		break;
+	default:
+		break;
+	}
+}
+
+
 
 
 /*enum EComResponse{
@@ -399,7 +486,71 @@ int write_type = UA_NS0ID_BOOLEAN;
  */
 
 
+/*
+ * static UA_StatusCode
+readLedStatus(void *handle, UA_NodeId nodeid, UA_Boolean sourceTimeStamp,
+              const UA_NumericRange *range, UA_DataValue *value) {
+    if(range)
+        return UA_STATUSCODE_BADINDEXRANGEINVALID;
 
+    value->hasValue = true;
+    UA_StatusCode retval = UA_Variant_setScalarCopy(&value->value, &ledStatus,
+                                                    &UA_TYPES[UA_TYPES_BOOLEAN]);
+
+    if(retval != UA_STATUSCODE_GOOD)
+        return retval;
+
+    if(sourceTimeStamp) {
+        value->sourceTimestamp = UA_DateTime_now();
+        value->hasSourceTimestamp = true;
+    }
+    return UA_STATUSCODE_GOOD;
+}
+ */
+
+/*
+ * /* LED control for rpi */
+//    if(access("/sys/class/leds/led0/trigger", F_OK ) != -1 ||
+//       access("/sys/class/leds/led0/brightness", F_OK ) != -1) {
+//        if((triggerFile = fopen("/sys/class/leds/led0/trigger", "w")) &&
+//           (ledFile = fopen("/sys/class/leds/led0/brightness", "w"))) {
+//            //setting led mode to manual
+//            fprintf(triggerFile, "%s", "none");
+//            fflush(triggerFile);
+//
+//            //turning off led initially
+//            fprintf(ledFile, "%s", "1");
+//            fflush(ledFile);
+//
+//            // add node with the LED status data source
+//            UA_DataSource ledStatusDataSource = (UA_DataSource) {
+//                .handle = NULL, .read = readLedStatus, .write = writeLedStatus};
+//            UA_VariableAttributes_init(&v_attr);
+//            v_attr.description = UA_LOCALIZEDTEXT("en_US","status LED");
+//            v_attr.displayName = UA_LOCALIZEDTEXT("en_US","status LED");
+//            const UA_QualifiedName statusName = UA_QUALIFIEDNAME(0, "status LED");
+//            UA_Server_addDataSourceVariableNode(server, UA_NODEID_NULL,
+//                                                UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
+//                                                UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES), statusName,
+//                                                UA_NODEID_NULL, v_attr, ledStatusDataSource, NULL);
+//        } else
+//            UA_LOG_WARNING(logger, UA_LOGCATEGORY_USERLAND,
+//                           "[Raspberry Pi] LED file exist, but is not accessible (try to run server with sudo)");
+//    }
+/*
+There are four mechanisms for callbacks from the node-based information model
+ * into userspace:
+ *
+ * - Datasources for variable nodes, where the variable content is managed
+ *   externally
+ * - Value-callbacks for variable nodes, where userspace is notified when a
+ *   read/write occurs
+ * - Object lifecycle management, where a user-defined constructor and
+ *   destructor is added to an object type
+ * - Method callbacks, where a user-defined method is exposed in the information
+ *   model
+
+ */
 
 
 

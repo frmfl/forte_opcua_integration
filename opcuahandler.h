@@ -40,6 +40,7 @@ public:
 	void setPriority(int pa_nPriority);
 	int getPriority(void) const;
 
+	/* OPC_UA Server interaction */
 	UA_Server * getServer(void);
 	UA_Client * getClient(void);
 
@@ -47,6 +48,9 @@ public:
 	UA_StatusCode getSPNodeId(const CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId);		// get source point (SP) NodeId
 	UA_StatusCode createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
 	UA_StatusCode createUAObjNode(const CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
+
+	/* OPC_UA Handler interaction */
+	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
 
 protected:
 

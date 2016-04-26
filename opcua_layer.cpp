@@ -1,14 +1,14 @@
 /*******************************************************************************
-  * Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
-  * All rights reserved. This program and the accompanying materials
-  * are made available under the terms of the Eclipse Public License v1.0
-  * which accompanies this distribution, and is available at
-  * http://www.eclipse.org/legal/epl-v10.html
-  *
-  * Contributors:
-  *    Florian Froschermeier
-  *      - initial integration of the OPC-UA protocol.
-  *******************************************************************************/
+ * Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Florian Froschermeier
+ *      - initial integration of the OPC-UA protocol.
+ *******************************************************************************/
 
 #include "opcua_layer.h"
 #include "opcuahandler.h"
@@ -46,6 +46,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		numData = getCommFB()->getNumSD();
 		dataArray = getCommFB()->getSDs();
 
+
 	}
 
 	// for OPC_UA also pass the parameters necessary to locate the variable at the correct
@@ -58,10 +59,10 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 }
 
 
-EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, char* paLayerParameter){
+EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int numSD, char* paLayerParameter){
 	EComResponse retValEcom = e_InitOk;
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-	if(0 == paNumData){
+	if(0 == numSD){
 		//handle pure event message
 		retValEcom = e_InitInvalidId;
 		// implement handling for pure event connections
@@ -70,11 +71,11 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 	} else{
 		// allocate memory for an array of pointers to pointers pointing to values of type NodeId
-		st_ParentChildNodeId.ppNodeId_ParentFB = new UA_NodeId *[paNumData];
-		st_ParentChildNodeId.ppNodeId_SrcPoint = new UA_NodeId *[paNumData];
+		st_ParentChildNodeId.ppNodeId_ParentFB = new UA_NodeId *[numSD];
+		st_ParentChildNodeId.ppNodeId_SrcPoint = new UA_NodeId *[numSD];
 
-		memset(st_ParentChildNodeId.ppNodeId_ParentFB, 0, sizeof(UA_NodeId *) * paNumData);		//!< initialize pointer memory: multiply size of struct with amount
-		memset(st_ParentChildNodeId.ppNodeId_SrcPoint, 0, sizeof(UA_NodeId *) * paNumData);		//!< initialize pointer memory: multiply size of struct with amount
+		memset(st_ParentChildNodeId.ppNodeId_ParentFB, 0, sizeof(UA_NodeId *) * numSD);		//!< initialize pointer memory: multiply size of NodeID pointer with amount
+		memset(st_ParentChildNodeId.ppNodeId_SrcPoint, 0, sizeof(UA_NodeId *) * numSD);		//!< initialize pointer memory: multiply size of NodeID pointer with amount
 
 		/* check for FBParent existence
 		 * create FBParent Node
@@ -82,11 +83,13 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 		 * create SourcePoint Node
 		 */
 
-		for(int i = 2; i < (paNumData+2); i++){
+		for(int i = 0; i < (numSD); i++){
+			int portCnt = i + 2;
 			const SFBInterfaceSpec* pstInterfaceSpec = getCommFB()->getFBInterfaceSpec();
-			const CStringDictionary::TStringId paDINameId = pstInterfaceSpec->m_aunDINames[i];
+			const CStringDictionary::TStringId paDINameId = pstInterfaceSpec->m_aunDINames[portCnt];
+
 			const char* myname = CStringDictionary::getInstance().get(paDINameId);
-			DEVLOG_INFO("%s with port ID %i and name %s found\n",CStringDictionary::getInstance().get(getCommFB()->getFBTypeId()), i, myname);
+			DEVLOG_INFO("%s with port ID %i and name %s found\n",CStringDictionary::getInstance().get(getCommFB()->getFBTypeId()), portCnt, myname);
 
 			const CDataConnection* pC_DIConn = getCommFB()->getDIConnection(paDINameId); 	//!< pointer to a Connection Object
 
@@ -114,7 +117,7 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 				if(retValcreateObjNode == UA_STATUSCODE_GOOD){
 					// Node creation successful
-					returnObjNodeId->identifier;
+					//returnObjNodeId->identifier;
 					//DEVLOG_INFO("Object node %s successfully created.\n",returnObjNodeId->identifier.string);		//FIXME add objectnode identifier here
 					DEVLOG_INFO("Object node successfully created.\n"); //FIXME convert returnObjNode identifier to string ->then output
 					//FIXME obacht bei union
@@ -149,7 +152,7 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 
 				if(retValcreateVarNode == UA_STATUSCODE_GOOD){
 					// Node creation successful
-					//DEVLOG_INFO("Object node %s successfully created.\n",returnVarNodeId->identifier);		//FIXME add variablenode identifier here
+					//DEVLOG_INFO("Object node %s successfully created.\n",returnVarNodeId->identifier.string);  //FIXME
 					DEVLOG_INFO("Object node successfully created. \n");
 					st_ParentChildNodeId.ppNodeId_SrcPoint[i] = returnVarNodeId;
 					retVal = UA_STATUSCODE_GOOD;
@@ -160,100 +163,43 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int paNumData, ch
 					retVal = retValcreateVarNode;
 
 				}
-			}
 
-		}
-	}
-	//FIXME: mapping from UA_StatusCode to EComResponse type!
-	retValEcom = e_InitOk;
-	return retValEcom;
-}
+				if(st_ParentChildNodeId.ppNodeId_SrcPoint[i]){
+					// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
+					COPC_UA_Handler::getInstance().updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], paDataArray[i]);
 
-
-
-/*
-
-
-
-	SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
-
-				CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
-				const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
-
-				CStringDictionary::TStringId sourceRDTypeNameId = sourceFBInterface->m_aunDODataTypeNames[sourceRD.mPortId];
-				const char * sourceRDTypeName = CStringDictionary::getInstance().get(sourceRDTypeNameId);
-
-				char message[128];
-				sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
-				DEVLOG_INFO(message);
-
-				//This calls the handler
-				COPC_UA_Handler::getInstance().registerNode(&NodeAttr);
-
-				registerDataPoint(paLayerParameter, "Coment");
-
-				if(0 != mSFPItem[i]){
-					//write the initial value to the SFP server so that the data type of the item gets set
-					CEclipseSCADASFPHandler::updateDataPoint(mSFPItem[i], paDataArray[i]);
 				}else {
 					retVal = e_InitInvalidId;
 					break;
 				}
 
-
-
-				retVal = e_InitInvalidId;
-				break;
 			}
 		}
 
-
-		//1. Create Struct for each item
-		//2. Create array of structs holding these items
-		//2.1 or maybe do a typecast and inherit the SD's data value to the struct member
-		//3. register a datapoint, maybe this does not work with OPC_UA
-
-		//1. Get SD's source Port FB and ID Name
-		//2. Check if Nodes exist
-		//3. Create Nodes
-		//4. Save Nodes to array and initialize with current value
-
-
-
-
 	}
-}
 
+//FIXME: mapping from UA_StatusCode to EComResponse type!
+// FIXME: set return value correct.
+retValEcom = e_InitOk;
+return retValEcom;
 }
-return retVal;
-
-}
- */
-
 
 EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 
-
-
 	EComResponse retVal = e_ProcessDataOk;
-	/*
+
 	if(0 == paSize){
 		//TODO change to an update now with out the need for a new allocation
-		UA_Server_writeValue()
-	    																								sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
+		// sfp_item_update_data_allocated(*mSFPItem, sfp_variant_new_null(), sfp_time_in_millis ());
 	}else {
-		CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
+		CIEC_ANY const *SDs(static_cast<const CIEC_ANY*>(paData));	// direct initialization of pointer to CIEC_ANY class
 		for(unsigned int i = 0; i < paSize; i++){
-			CEclipseSCADASFPHandler::updateDataPoint(mSFPItem[i], SDs[i]);  //TODO use common timestamp for all
+			COPC_UA_Handler::updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], SDs[i]);
+			break;
 		}
 	}
 	return retVal;
 }
-	 */
-	return retVal;
-
-}
-
 
 EComResponse COPC_UA_Layer::recvData(const void* pav_pvData, unsigned int pa_unSize){
 	EComResponse retVal = e_Nothing;
