@@ -45,13 +45,25 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 	}else{
 		numData = getCommFB()->getNumSD();
 		dataArray = getCommFB()->getSDs();
+	}
 
+	EComResponse retVal = createItems(dataArray, numData, paLayerParameter);
 
+	// Register notification Callback for Subscriber Function Blocks
+	if(e_InitOk == retVal){
+		if(e_Subscriber == getCommFB()->getComServiceType()){
+			if(0 == numData){
+				numData = 1;  //register for the item used for the event transmition
+			}
+			for(int i = 0; i < numData; i++){
+				COPC_UA_Handler::getInstance().registerWriteCallBack(mSFPItem[i], this);
+			}
+		}
 	}
 
 	// for OPC_UA also pass the parameters necessary to locate the variable at the correct
 	//position in the address space.
-	EComResponse retVal = createItems(dataArray, numData, paLayerParameter);
+
 
 	return retVal;
 
@@ -178,10 +190,10 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int numSD, char* 
 
 	}
 
-//FIXME: mapping from UA_StatusCode to EComResponse type!
-// FIXME: set return value correct.
-retValEcom = e_InitOk;
-return retValEcom;
+	//FIXME: mapping from UA_StatusCode to EComResponse type!
+	// FIXME: set return value correct.
+	retValEcom = e_InitOk;
+	return retValEcom;
 }
 
 EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
@@ -194,22 +206,37 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	}else {
 		CIEC_ANY const *SDs(static_cast<const CIEC_ANY*>(paData));	// direct initialization of pointer to CIEC_ANY class
 		for(unsigned int i = 0; i < paSize; i++){
-			COPC_UA_Handler::updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], SDs[i]);
+			//COPC_UA_Handler::updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], SDs[i]);
 			break;
 		}
 	}
 	return retVal;
 }
 
-EComResponse COPC_UA_Layer::recvData(const void* pav_pvData, unsigned int pa_unSize){
-	EComResponse retVal = e_Nothing;
-	return retVal;
+
+EComResponse COPC_UA_Layer::recvData(const void *paData, unsigned int ){
+	mInterruptResp = e_ProcessDataOk;
+	const struct sfp_variant *value = static_cast<const struct sfp_variant *>(paData);
+
+	if(0 == getCommFB()->getNumRD()){
+		//we are a subscribe 0
+		if(VT_NULL != value->type){
+			mInterruptResp = e_ProcessDataRecvFaild;
+		}
+	}else{
+		CIEC_ANY &RD1(*getCommFB()->getRDs());
+		if(!CEclipseSCADASFPHandler::readBackDataPoint(value, RD1)){
+			mInterruptResp = e_ProcessDataRecvFaild;
+		}
+	}
+
+	getCommFB()->interruptCommFB(this);
+	return mInterruptResp;
 }
 
-
-EComResponse COPC_UA_Layer::processInterrupt(void){
-	EComResponse retVal = e_Nothing;
-	return retVal;
+EComResponse COPC_UA_Layer::processInterrupt(){
+	//we don't need to do anything here
+	return mInterruptResp;
 }
 
 

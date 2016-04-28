@@ -51,6 +51,9 @@ public:
 
 	/* OPC_UA Handler interaction */
 	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
+	void registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer);
+	void handleWriteNodeCallback();		// Value Callback on write UA_Variable Node
+	static void onWrite();
 
 protected:
 
@@ -95,6 +98,8 @@ private:
 	virtual void run();
 
 	void registerNode();
+
+	static const int scmUADataTypeMapping[];
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUAHANDLER_H_ */

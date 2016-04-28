@@ -32,26 +32,17 @@ public:
 	forte::com_infra::EComResponse recvData(const void * pa_pvData, unsigned int pa_unSize);
 	forte::com_infra::EComResponse processInterrupt();
 
-
 private:
 	forte::com_infra::EComResponse openConnection(char * paLayerParameter);
-	struct {UA_NodeId **ppNodeId_ParentFB;	//!< pointer to the array of Parent FunctionBlock NodeIds managed by the OCP_UA Server Stack
-			UA_NodeId **ppNodeId_SrcPoint;} st_ParentChildNodeId;	//!< pointer to the array of SourcePoint (SDs) NodeIds managed by the OCP_UA Server Stack
 
 	forte::com_infra::EComResponse createItems(CIEC_ANY *paDataArray, int numDI, char *paLayerParameter);
+
+	forte::com_infra::EComResponse mInterruptResp;
+
+	struct {UA_NodeId **ppNodeId_ParentFB;	//!< pointer to the array of Parent FunctionBlock NodeIds managed by the OCP_UA Server Stack
+				UA_NodeId **ppNodeId_SrcPoint;} st_ParentChildNodeId;	//!< pointer to the array of SourcePoint (SDs) NodeIds managed by the OCP_UA Server Stack
+
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUA_LAYER_H_ */
 
-
-/*
- * struct item // naming it 'items' might be confusing, and was used inconsistently
-            // in your code sample
-{
-    int member1;
-    int member2;
-};
-
-int N=5;
-item **ptr=new item *[N];
- */

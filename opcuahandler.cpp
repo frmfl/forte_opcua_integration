@@ -19,6 +19,16 @@
 
 DEFINE_SINGLETON(COPC_UA_Handler);
 
+const int COPC_UA_Handler::scmUADataTypeMapping[] = {
+		0, //e_ANY,
+		UA_TYPES_BOOLEAN, //e_BOOL,
+//		e_SINT, e_INT, e_DINT, e_LINT, e_USINT, e_UINT, e_UDINT, e_ULINT, e_BYTE, e_WORD, e_DWORD, e_LWORD, e_DATE, e_TIME_OF_DAY, e_DATE_AND_TIME, e_TIME, //until here simple Datatypes
+//		      e_REAL,
+//		      e_LREAL,
+//		      e_STRING,
+//		      e_WSTRING
+};
+
 void COPC_UA_Handler::configureUAServer() {
 	m_server_config = UA_ServerConfig_standard;
 	m_server_config.enableUsernamePasswordLogin = false;
@@ -369,99 +379,111 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConn
 // ((CIEC_BOOL &) paDataPoint).operator bool());
 
 void COPC_UA_Handler::updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint){
-	UA_Variant* pNodeValue;		// new Variant object
+	UA_Variant NodeValue;		// new Variant object
+	UA_Variant_init(&NodeValue);
+
+	UA_Variant_setScalarCopy(&NodeValue, static_cast<const void *>(paDataPoint.getConstDataPtr()),
+			&UA_TYPES[scmUADataTypeMapping[paDataPoint.getDataTypeID()]]);
+    UA_Server_writeValue(mOPCUAServer, *pNodeId, NodeValue);
+
+
 	switch (paDataPoint.getDataTypeID()){
 	case CIEC_ANY::e_BOOL:
-		// UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_BOOLEAN]);
+		UA_Variant_setScalarCopy(&NodeValue, &((CIEC_BOOL &) paDataPoint).operator bool(), &UA_TYPES[UA_TYPES_BOOLEAN]);
 		//UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, ((CIEC_BOOL &) paDataPoint).operator bool());
 		break;
 	case CIEC_ANY::e_SINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_SBYTE]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_SINT &) paDataPoint).operator signed char(), &UA_TYPES[UA_TYPES_SBYTE]);
+		//UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_SBYTE]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_USINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_BYTE]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_BYTE &) paDataPoint).operator unsigned char(), &UA_TYPES[UA_TYPES_BYTE]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_INT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_INT16]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_INT &) paDataPoint).operator short int(), &UA_TYPES[UA_TYPES_INT16]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_UINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT16]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint).operator unsigned short int(), &UA_TYPES[UA_TYPES_UINT16]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_DINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_INT32]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_DINT &) paDataPoint).operator int(), &UA_TYPES[UA_TYPES_INT32]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_UDINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT32]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UDINT &) paDataPoint).operator unsigned int(), &UA_TYPES[UA_TYPES_UINT32]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
+		/*
 	case CIEC_ANY::e_LINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_INT64]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_L &) paDataPoint). &UA_TYPES[UA_TYPES_INT64]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_ULINT:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT64]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_ &) paDataPoint), &UA_TYPES[UA_TYPES_UINT64]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
+		 */
 	case CIEC_ANY::e_BYTE:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_BYTE]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_BYTE &) paDataPoint).operator unsigned char(), &UA_TYPES[UA_TYPES_BYTE]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_WORD:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT16]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_WORD &) paDataPoint).operator unsigned short int(), &UA_TYPES[UA_TYPES_UINT16]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_DWORD:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT32]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_DWORD &) paDataPoint).operator unsigned int(), &UA_TYPES[UA_TYPES_UINT32]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
+		/*#ifdef FORTE_USE_64BIT_DATATYPES
 	case CIEC_ANY::e_LWORD:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_UINT64]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_LWORD &) paDataPoint), &UA_TYPES[UA_TYPES_UINT64]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
+#endif
 	case CIEC_ANY::e_REAL:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_FLOAT]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_FLOAT]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_LREAL:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DOUBLE]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DOUBLE]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_STRING:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_STRING]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_STRING]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_WSTRING:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_STRING]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_STRING]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 		//  case CIEC_ANY::e_CHAR:		not defined in forte
 		//  case CIEC_ANY::e_WCHAR:		not defined in forte
 	case CIEC_ANY::e_DATE_AND_TIME:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DATETIME]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DATETIME]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_DATE:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DATETIME]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DATETIME]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_TIME_OF_DAY:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DATETIME]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DATETIME]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_TIME:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_DOUBLE]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DOUBLE]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
 	case CIEC_ANY::e_ANY:
-		UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_NS0ID_BASEDATATYPE]);
+		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_NS0ID_BASEDATATYPE]);
 		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
 		break;
+		 */
 	default:
 		break;
 	}
@@ -538,7 +560,8 @@ readLedStatus(void *handle, UA_NodeId nodeid, UA_Boolean sourceTimeStamp,
 //                           "[Raspberry Pi] LED file exist, but is not accessible (try to run server with sudo)");
 //    }
 /*
-There are four mechanisms for callbacks from the node-based information model
+ *
+ * There are four mechanisms for callbacks from the node-based information model
  * into userspace:
  *
  * - Datasources for variable nodes, where the variable content is managed
@@ -551,6 +574,144 @@ There are four mechanisms for callbacks from the node-based information model
  *   model
 
  */
+
+
+void COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer){
+	UA_ValueCallback callback = {static_cast<void *>(paLayer), NULL, onWrite};
+	UA_Server_setVariableNode_valueCallback(mOPCUAServer, paNodeId, callback);
+}
+
+void COPC_UA_Handler::onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
+                    const UA_NumericRange *range) {
+    UA_LOG_INFO(logger, UA_LOGCATEGORY_USERLAND, "onWrite; handle: %i", (uintptr_t)h);
+}
+
+void COPC_UA_Handler::handleWriteNodeCallback(struct sfp_item * pa_pstItem, struct sfp_variant *pa_pstValue, int32_t pa_nOperationID,
+		struct sfp_strategy * pa_pstStrategy,
+		void (*handle_result)(struct sfp_strategy* strategy, int32_t operation_id, struct sfp_error_information* error),
+		void * pa_pvCtx){
+	CComLayer *layer = static_cast<CComLayer *>(pa_pvCtx);
+
+	EComResponse retVal = layer->recvData(static_cast<void *>(pa_pstValue), 0);
+
+	if(e_ProcessDataOk == retVal){
+		//only update data in item if data could be read
+		sfp_item_update_data(pa_pstItem, pa_pstValue, sfp_time_in_millis());
+	}
+
+	if(e_Nothing != retVal){
+		getInstance().startNewEventChain(layer->getCommFB());
+	}
+
+	//  sfp_error_information_new(
+	//
+	handle_result(pa_pstStrategy, pa_nOperationID, NULL );
+}
+
+
+/*
+ typedef struct {
+    void *handle;
+    void (*onRead)(void *handle, const UA_NodeId nodeid,
+                   const UA_Variant *data, const UA_NumericRange *range);
+    void (*onWrite)(void *handle, const UA_NodeId nodeid,
+                    const UA_Variant *data, const UA_NumericRange *range);
+} UA_ValueCallback;
+
+UA_StatusCode
+UA_Server_setVariableNode_valueCallback(UA_Server *server, const UA_NodeId nodeId,
+                                        const UA_ValueCallback callback);
+ */
+
+sfp_item_set_write_handler (
+    struct sfp_item * item,
+    void
+    (*handle_write) (
+	struct sfp_item * item,
+	struct sfp_variant * value,
+	int32_t operation_id,
+	struct sfp_strategy * strategy,
+	void
+	(*handle_result) (struct sfp_strategy* strategy, int32_t operation_id,
+			  struct sfp_error_information* error),
+	void * ctx),
+    void * ctx)
+{
+  item->handle_write_ctx = ctx;
+  item->handle_write = handle_write;
+}
+
+
+
+
+
+
+bool COPC_UA_Handler::readBackDataPoint(const struct sfp_variant *paValue, CIEC_ANY &paDataPoint){
+	bool retVal = true;
+	switch (paDataPoint.getDataTypeID()){
+	case CIEC_ANY::e_BOOL:
+		if(VT_BOOLEAN == paValue->type){
+			((CIEC_BOOL &) paDataPoint) = (paValue->payload.val_boolean != 0 );
+		}else{
+			retVal = false;
+		}
+		break;
+	case CIEC_ANY::e_SINT:
+	case CIEC_ANY::e_INT:
+	case CIEC_ANY::e_DINT:
+	case CIEC_ANY::e_USINT:
+	case CIEC_ANY::e_UINT:
+	case CIEC_ANY::e_BYTE:
+	case CIEC_ANY::e_WORD:
+		//Everything smaller or equal 32Bit will be handled here
+		if(VT_INT32 == paValue->type){
+			((CIEC_DINT &) paDataPoint) = paValue->payload.val_int;
+		}else{
+			retVal = false;
+		}
+		break;
+	case CIEC_ANY::e_LINT:
+	case CIEC_ANY::e_UDINT:
+	case CIEC_ANY::e_ULINT:
+	case CIEC_ANY::e_DWORD:
+	case CIEC_ANY::e_LWORD:
+		//Everything needing more than 32Bit signed integer will be handled here
+		if(VT_INT64 == paValue->type){
+			((CIEC_LINT &) paDataPoint) = paValue->payload.val_long;
+		}else{
+			retVal = false;
+		}
+	case CIEC_ANY::e_REAL:
+		if(VT_DOUBLE == paValue->type){
+			((CIEC_REAL &) paDataPoint) = static_cast<CIEC_REAL::TValueType>(paValue->payload.val_double);
+		}else{
+			retVal = false;
+		}
+		break;
+	case CIEC_ANY::e_LREAL:
+		if(VT_DOUBLE == paValue->type){
+			((CIEC_LREAL &) paDataPoint) = paValue->payload.val_double;
+		}else{
+			retVal = false;
+		}
+		break;
+	case CIEC_ANY::e_STRING:
+	case CIEC_ANY::e_WSTRING:
+		if(VT_BOOLEAN == paValue->type){
+			((CIEC_ANY_STRING &) paDataPoint) = paValue->payload.val_string;
+		}else{
+			retVal = false;
+		}
+		break;
+	default:
+		//TODO think on how to handle these e_DATE, e_TIME_OF_DAY, e_DATE_AND_TIME, e_TIME
+		retVal = false;
+		break;
+	}
+	return retVal;
+}
+
+
 
 
 
