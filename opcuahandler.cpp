@@ -20,13 +20,43 @@
 DEFINE_SINGLETON(COPC_UA_Handler);
 
 const int COPC_UA_Handler::scmUADataTypeMapping[] = {
-		0, //e_ANY,
+		/* Datatype mapping of IEC61131 types to OPC-UA types according
+		 * to OPC UA standard specification release 1.0,
+		 * "Information Model" Table 26, Section 5.2 Datatypes;
+		 */
+
+		UA_TYPES_VARIANT, //e_ANY,
 		UA_TYPES_BOOLEAN, //e_BOOL,
-//		e_SINT, e_INT, e_DINT, e_LINT, e_USINT, e_UINT, e_UDINT, e_ULINT, e_BYTE, e_WORD, e_DWORD, e_LWORD, e_DATE, e_TIME_OF_DAY, e_DATE_AND_TIME, e_TIME, //until here simple Datatypes
-//		      e_REAL,
-//		      e_LREAL,
-//		      e_STRING,
-//		      e_WSTRING
+		UA_TYPES_SBYTE, //e_SINT,
+		UA_TYPES_INT16,	//e_INT
+		UA_TYPES_INT32, //e_DINT
+		UA_TYPES_INT64, //e_LINT
+		UA_TYPES_BYTE, //e_USINT,
+		UA_TYPES_UINT16, //e_UINT
+		UA_TYPES_UINT32, //e_UDINT
+		UA_TYPES_UINT64, //e_ULINT
+		UA_TYPES_BYTE, //e_BYTE
+		UA_TYPES_UINT16, //e_WORD
+		UA_TYPES_UINT32, //e_DWORD
+		UA_TYPES_UINT64, //e_LWORD
+		UA_TYPES_DATETIME, //e_DATE,
+		UA_TYPES_DATETIME, //e_TIME_OF_DAY,
+		UA_TYPES_DATETIME, //e_DATE_AND_TIME,
+		UA_TYPES_DOUBLE, //e_TIME, //until here simple Datatypes
+		UA_TYPES_FLOAT, //e_REAL
+		UA_TYPES_DOUBLE, //e_LREAL
+		UA_TYPES_STRING, //e_STRING
+		UA_TYPES_STRING //e_WSTRING,
+
+		//TODO implement mapping for following datatypes.
+		//e_DerivedData,
+		//e_DirectlyDerivedData,
+		//e_EnumeratedData,
+		//e_SubrangeData,
+		//e_ARRAY, //according to the compliance profile
+		//e_STRUCT,
+		//e_External = 256, // Base for CIEC_ANY based types outside of the forte base
+		//e_Max = 65535 // Guarantees at least 16 bits - otherwise gcc will optimizes on some platforms
 };
 
 void COPC_UA_Handler::configureUAServer() {
@@ -104,78 +134,6 @@ void COPC_UA_Handler::stopServerRunning(){
 
 
 void COPC_UA_Handler::registerNode(){
-
-	/*
-	char *fb_name;
-	strcpy(fb_name, NodeAttr->fb_name);
-
-	char *var_name;
-	strcpy(var_name, NodeAttr->port_name);
-
-	char *var_id;
-	strcpy(var_id, NodeAttr->port_id);
-
-	UA_Client *myClient = getClient();
-
-
-	char node_id_string[64];
-	int node_found = 0;
-
-
-	UA_BrowseRequest bReq;
-	UA_BrowseRequest_init(&bReq);
-	bReq.requestedMaxReferencesPerNode = 0;
-	bReq.nodesToBrowse = UA_BrowseDescription_new();
-	bReq.nodesToBrowseSize = 1;
-	bReq.nodesToBrowse[0].nodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER); //browse objects folder
-	bReq.nodesToBrowse[0].resultMask = UA_BROWSERESULTMASK_ALL; //return everything
-
-	UA_BrowseResponse bResp = UA_Client_Service_browse(client, bReq);
-
-	//createObjectNode
-	//nodetype depends on the return value of the client. If parent node already exists, then construct
-	//variable node. If variable node exists, do nothing.
-	/*switch (nodetype)
-	{
-	case "object":
-	   Aktion1
-	   break;
-	case "variable":
-	   Aktion2
-	   break;
-
-	default:
-	   Aktion4
-	}
-	 */
-	/*
-
-	UA_Server_addVariableNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
-			const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
-			const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
-			const UA_VariableAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
-
-					UA_Server_addObjectNode(UA_Server *server, const UA_NodeId requestedNewNodeId,
-							const UA_NodeId parentNodeId, const UA_NodeId referenceTypeId,
-							const UA_QualifiedName browseName, const UA_NodeId typeDefinition,
-							const UA_ObjectAttributes attr, UA_InstantiationCallback *instantiationCallback, UA_NodeId *outNewNodeId)
-
-	UA_VariableAttributes attr;
-	UA_VariableAttributes_init(&attr);
-	UA_Int32 myInteger = 42;
-	UA_Variant_setScalar(&attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
-	attr.description = UA_LOCALIZEDTEXT("en_US","the answer");
-	attr.displayName = UA_LOCALIZEDTEXT("en_US","the answer");
-
-
-	UA_NodeId objNodeId = UA_NODEID_STRING(1, "system.node");
-	UA_NodeId_init(&objNodeId);
-	UA_QualifiedName
-
-
-
-	//createVariableNode
-	 */
 }
 
 
@@ -198,56 +156,14 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(const CFunctionBlock* pCFB, UA_NodeId
 		retVal = UA_NodeId_copy(returnNodeId, returnFBNodeId);	// reading successful, return NodeId
 	};
 	return retVal;
-
-
-	// Careful container!
-	/*CStringDictionary::TStringId sourceFBTypeNameId = sourceFB->getFBTypeId();
-						const char * sourceFBTypeName = CStringDictionary::getInstance().get(sourceFBTypeNameId);
-						//FIXME Retrieve System name
-
-						CStringDictionary::TStringId sourceFBNameId = sourceFB->getInstanceNameId();
-						const char* sourceFBName = sourceFB->getInstanceName();
-
-						SFBInterfaceSpec* sourceFBInterface = sourceFB->getFBInterfaceSpec();
-
-						CStringDictionary::TStringId sourceRDNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
-						const char * sourceRDName = CStringDictionary::getInstance().get(sourceRDNameId);
-
-						CStringDictionary::TStringId sourceRDTypeNameId = sourceFBInterface->m_aunDODataTypeNames[sourceRD.mPortId];
-						const char * sourceRDTypeName = CStringDictionary::getInstance().get(sourceRDTypeNameId);
-
-						char message[128];
-						sprintf(message,"%s %s %s\n", sourceFBName, sourceFBTypeName, sourceRDName, sourceRDTypeName);
-						DEVLOG_INFO(message);
-
-						char *fb_name;
-						strcpy(fb_name, sourceFBName);
-
-						char *fb_typename;
-						strcpy(fb_typename, sourceFBTypeName);
-
-						char *var_name;
-						strcpy(var_name, sourceRDName);
-
-						char *var_typename;
-						strcpy(var_typename, sourceRDTypeName);
-
-						char varBrowse_id[64];
-						sprintf(varBrowse_id, "%s.%s", fb_name, var_name);
-
-						COPC_UA_Handler::getInstance().NodeAttr.fb_name = fb_name;
-						COPC_UA_Handler::getInstance().NodeAttr.fb_typename = fb_typename;
-						COPC_UA_Handler::getInstance().NodeAttr.port_name = var_name;
-						COPC_UA_Handler::getInstance().NodeAttr.port_typename = var_typename;
-	 */
-
 }
 
 
 UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 
-	// Important Comment: Reading the node without reference to parent node id, unknown if this works.
+	// Reading the node without reference to parent node id, unknown if this works.
+	//FIXME needs further testing with OPC_UA Address Space Browser and example node
 	const SFBInterfaceSpec* sourceFBInterface = pCFB->getFBInterfaceSpec();
 
 	CStringDictionary::TStringId SPNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
@@ -375,205 +291,18 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConn
 	return retVal;
 }
 
-
-// ((CIEC_BOOL &) paDataPoint).operator bool());
-
+/*
+ * Update UA Address Space node value given by the data pointer to an IEC61499 data object.
+ * Mapping of IEC61499 to OPC-UA types is performed by scmUADataTypeMapping array.
+ */
 void COPC_UA_Handler::updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint){
 	UA_Variant NodeValue;		// new Variant object
 	UA_Variant_init(&NodeValue);
 
 	UA_Variant_setScalarCopy(&NodeValue, static_cast<const void *>(paDataPoint.getConstDataPtr()),
 			&UA_TYPES[scmUADataTypeMapping[paDataPoint.getDataTypeID()]]);
-    UA_Server_writeValue(mOPCUAServer, *pNodeId, NodeValue);
-
-
-	switch (paDataPoint.getDataTypeID()){
-	case CIEC_ANY::e_BOOL:
-		UA_Variant_setScalarCopy(&NodeValue, &((CIEC_BOOL &) paDataPoint).operator bool(), &UA_TYPES[UA_TYPES_BOOLEAN]);
-		//UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_SINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_SINT &) paDataPoint).operator signed char(), &UA_TYPES[UA_TYPES_SBYTE]);
-		//UA_Variant_setScalarCopy(pNodeValue, paDataPoint.getConstDataPtr(), &UA_TYPES[UA_TYPES_SBYTE]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_USINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_BYTE &) paDataPoint).operator unsigned char(), &UA_TYPES[UA_TYPES_BYTE]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_INT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_INT &) paDataPoint).operator short int(), &UA_TYPES[UA_TYPES_INT16]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_UINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint).operator unsigned short int(), &UA_TYPES[UA_TYPES_UINT16]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_DINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_DINT &) paDataPoint).operator int(), &UA_TYPES[UA_TYPES_INT32]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_UDINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UDINT &) paDataPoint).operator unsigned int(), &UA_TYPES[UA_TYPES_UINT32]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-		/*
-	case CIEC_ANY::e_LINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_L &) paDataPoint). &UA_TYPES[UA_TYPES_INT64]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_ULINT:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_ &) paDataPoint), &UA_TYPES[UA_TYPES_UINT64]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-		 */
-	case CIEC_ANY::e_BYTE:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_BYTE &) paDataPoint).operator unsigned char(), &UA_TYPES[UA_TYPES_BYTE]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_WORD:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_WORD &) paDataPoint).operator unsigned short int(), &UA_TYPES[UA_TYPES_UINT16]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_DWORD:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_DWORD &) paDataPoint).operator unsigned int(), &UA_TYPES[UA_TYPES_UINT32]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-		/*#ifdef FORTE_USE_64BIT_DATATYPES
-	case CIEC_ANY::e_LWORD:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_LWORD &) paDataPoint), &UA_TYPES[UA_TYPES_UINT64]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-#endif
-	case CIEC_ANY::e_REAL:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_FLOAT]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_LREAL:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DOUBLE]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_STRING:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_STRING]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_WSTRING:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_STRING]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-		//  case CIEC_ANY::e_CHAR:		not defined in forte
-		//  case CIEC_ANY::e_WCHAR:		not defined in forte
-	case CIEC_ANY::e_DATE_AND_TIME:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DATETIME]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_DATE:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DATETIME]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_TIME_OF_DAY:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DATETIME]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_TIME:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_TYPES_DOUBLE]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-	case CIEC_ANY::e_ANY:
-		UA_Variant_setScalarCopy(pNodeValue, &((CIEC_UINT &) paDataPoint), &UA_TYPES[UA_NS0ID_BASEDATATYPE]);
-		UA_Server_writeValue(mOPCUAServer, *pNodeId, *pNodeValue);
-		break;
-		 */
-	default:
-		break;
-	}
+	UA_Server_writeValue(mOPCUAServer, *pNodeId, NodeValue);
 }
-
-
-
-
-/*enum EComResponse{
-  e_Nothing = 0,
-  e_InitOk = e_InitPositive | e_Ok,
-  e_ProcessDataOk = e_ProcessDataPositive | e_Ok,
-  e_InitInvalidId = e_InitNegative | e_InvalidId,
-  e_InitTerminated = e_InitNegative | e_Terminated,
-  e_ProcessDataInvalidObject = e_ProcessDataNegative | e_InvalidObject,
-  e_ProcessDataDataTypeError = e_ProcessDataNegative | e_DataTypeError,
-  e_ProcessDataInhibited = e_ProcessDataNegative | e_Inhibited,
-  e_ProcessDataNoSocket = e_ProcessDataNegative | e_NoSocket,
-  e_ProcessDataSendFailed = e_ProcessDataNegative | e_SendFailed,
-  e_ProcessDataRecvFaild = e_ProcessDataNegative | e_RecvFailed
-
- */
-
-
-/*
- * static UA_StatusCode
-readLedStatus(void *handle, UA_NodeId nodeid, UA_Boolean sourceTimeStamp,
-              const UA_NumericRange *range, UA_DataValue *value) {
-    if(range)
-        return UA_STATUSCODE_BADINDEXRANGEINVALID;
-
-    value->hasValue = true;
-    UA_StatusCode retval = UA_Variant_setScalarCopy(&value->value, &ledStatus,
-                                                    &UA_TYPES[UA_TYPES_BOOLEAN]);
-
-    if(retval != UA_STATUSCODE_GOOD)
-        return retval;
-
-    if(sourceTimeStamp) {
-        value->sourceTimestamp = UA_DateTime_now();
-        value->hasSourceTimestamp = true;
-    }
-    return UA_STATUSCODE_GOOD;
-}
- */
-
-/*
- * /* LED control for rpi */
-//    if(access("/sys/class/leds/led0/trigger", F_OK ) != -1 ||
-//       access("/sys/class/leds/led0/brightness", F_OK ) != -1) {
-//        if((triggerFile = fopen("/sys/class/leds/led0/trigger", "w")) &&
-//           (ledFile = fopen("/sys/class/leds/led0/brightness", "w"))) {
-//            //setting led mode to manual
-//            fprintf(triggerFile, "%s", "none");
-//            fflush(triggerFile);
-//
-//            //turning off led initially
-//            fprintf(ledFile, "%s", "1");
-//            fflush(ledFile);
-//
-//            // add node with the LED status data source
-//            UA_DataSource ledStatusDataSource = (UA_DataSource) {
-//                .handle = NULL, .read = readLedStatus, .write = writeLedStatus};
-//            UA_VariableAttributes_init(&v_attr);
-//            v_attr.description = UA_LOCALIZEDTEXT("en_US","status LED");
-//            v_attr.displayName = UA_LOCALIZEDTEXT("en_US","status LED");
-//            const UA_QualifiedName statusName = UA_QUALIFIEDNAME(0, "status LED");
-//            UA_Server_addDataSourceVariableNode(server, UA_NODEID_NULL,
-//                                                UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
-//                                                UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES), statusName,
-//                                                UA_NODEID_NULL, v_attr, ledStatusDataSource, NULL);
-//        } else
-//            UA_LOG_WARNING(logger, UA_LOGCATEGORY_USERLAND,
-//                           "[Raspberry Pi] LED file exist, but is not accessible (try to run server with sudo)");
-//    }
-/*
- *
- * There are four mechanisms for callbacks from the node-based information model
- * into userspace:
- *
- * - Datasources for variable nodes, where the variable content is managed
- *   externally
- * - Value-callbacks for variable nodes, where userspace is notified when a
- *   read/write occurs
- * - Object lifecycle management, where a user-defined constructor and
- *   destructor is added to an object type
- * - Method callbacks, where a user-defined method is exposed in the information
- *   model
-
- */
 
 
 void COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer){
@@ -582,8 +311,8 @@ void COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra
 }
 
 void COPC_UA_Handler::onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
-                    const UA_NumericRange *range) {
-    UA_LOG_INFO(logger, UA_LOGCATEGORY_USERLAND, "onWrite; handle: %i", (uintptr_t)h);
+		const UA_NumericRange *range) {
+	UA_LOG_INFO(logger, UA_LOGCATEGORY_USERLAND, "onWrite; handle: %i", (uintptr_t)h);
 }
 
 void COPC_UA_Handler::handleWriteNodeCallback(struct sfp_item * pa_pstItem, struct sfp_variant *pa_pstValue, int32_t pa_nOperationID,
@@ -609,105 +338,10 @@ void COPC_UA_Handler::handleWriteNodeCallback(struct sfp_item * pa_pstItem, stru
 }
 
 
-/*
- typedef struct {
-    void *handle;
-    void (*onRead)(void *handle, const UA_NodeId nodeid,
-                   const UA_Variant *data, const UA_NumericRange *range);
-    void (*onWrite)(void *handle, const UA_NodeId nodeid,
-                    const UA_Variant *data, const UA_NumericRange *range);
-} UA_ValueCallback;
-
-UA_StatusCode
-UA_Server_setVariableNode_valueCallback(UA_Server *server, const UA_NodeId nodeId,
-                                        const UA_ValueCallback callback);
- */
-
-sfp_item_set_write_handler (
-    struct sfp_item * item,
-    void
-    (*handle_write) (
-	struct sfp_item * item,
-	struct sfp_variant * value,
-	int32_t operation_id,
-	struct sfp_strategy * strategy,
-	void
-	(*handle_result) (struct sfp_strategy* strategy, int32_t operation_id,
-			  struct sfp_error_information* error),
-	void * ctx),
-    void * ctx)
-{
-  item->handle_write_ctx = ctx;
-  item->handle_write = handle_write;
-}
-
-
-
-
-
-
 bool COPC_UA_Handler::readBackDataPoint(const struct sfp_variant *paValue, CIEC_ANY &paDataPoint){
 	bool retVal = true;
-	switch (paDataPoint.getDataTypeID()){
-	case CIEC_ANY::e_BOOL:
-		if(VT_BOOLEAN == paValue->type){
-			((CIEC_BOOL &) paDataPoint) = (paValue->payload.val_boolean != 0 );
-		}else{
-			retVal = false;
-		}
-		break;
-	case CIEC_ANY::e_SINT:
-	case CIEC_ANY::e_INT:
-	case CIEC_ANY::e_DINT:
-	case CIEC_ANY::e_USINT:
-	case CIEC_ANY::e_UINT:
-	case CIEC_ANY::e_BYTE:
-	case CIEC_ANY::e_WORD:
-		//Everything smaller or equal 32Bit will be handled here
-		if(VT_INT32 == paValue->type){
-			((CIEC_DINT &) paDataPoint) = paValue->payload.val_int;
-		}else{
-			retVal = false;
-		}
-		break;
-	case CIEC_ANY::e_LINT:
-	case CIEC_ANY::e_UDINT:
-	case CIEC_ANY::e_ULINT:
-	case CIEC_ANY::e_DWORD:
-	case CIEC_ANY::e_LWORD:
-		//Everything needing more than 32Bit signed integer will be handled here
-		if(VT_INT64 == paValue->type){
-			((CIEC_LINT &) paDataPoint) = paValue->payload.val_long;
-		}else{
-			retVal = false;
-		}
-	case CIEC_ANY::e_REAL:
-		if(VT_DOUBLE == paValue->type){
-			((CIEC_REAL &) paDataPoint) = static_cast<CIEC_REAL::TValueType>(paValue->payload.val_double);
-		}else{
-			retVal = false;
-		}
-		break;
-	case CIEC_ANY::e_LREAL:
-		if(VT_DOUBLE == paValue->type){
-			((CIEC_LREAL &) paDataPoint) = paValue->payload.val_double;
-		}else{
-			retVal = false;
-		}
-		break;
-	case CIEC_ANY::e_STRING:
-	case CIEC_ANY::e_WSTRING:
-		if(VT_BOOLEAN == paValue->type){
-			((CIEC_ANY_STRING &) paDataPoint) = paValue->payload.val_string;
-		}else{
-			retVal = false;
-		}
-		break;
-	default:
-		//TODO think on how to handle these e_DATE, e_TIME_OF_DAY, e_DATE_AND_TIME, e_TIME
-		retVal = false;
-		break;
-	}
+
+
 	return retVal;
 }
 
