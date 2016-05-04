@@ -1,14 +1,14 @@
 /*******************************************************************************
-  * Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
-  * All rights reserved. This program and the accompanying materials
-  * are made available under the terms of the Eclipse Public License v1.0
-  * which accompanies this distribution, and is available at
-  * http://www.eclipse.org/legal/epl-v10.html
-  *
-  * Contributors:
-  *    Florian Froschermeier
-  *      - initial integration of the OPC-UA protocol
-  *******************************************************************************/
+ * Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Florian Froschermeier
+ *      - initial integration of the OPC-UA protocol
+ *******************************************************************************/
 
 
 #ifndef SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
@@ -48,8 +48,10 @@ public:
 	/* OPC_UA Handler interaction */
 	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
 	void registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer);
+	static void onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
+			const UA_NumericRange *range);
 	void handleWriteNodeCallback();		// Value Callback on write UA_Variable Node
-	static void onWrite();
+
 
 protected:
 

@@ -15,7 +15,7 @@
 #include <string.h>
 #include <cstdbool>
 
-
+using namespace forte::com_infra;
 
 DEFINE_SINGLETON(COPC_UA_Handler);
 
@@ -304,16 +304,35 @@ void COPC_UA_Handler::updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint
 	UA_Server_writeValue(mOPCUAServer, *pNodeId, NodeValue);
 }
 
-
+/* Register a callback routine to a Node in the Address Space that is executed
+ * on either write or read access on the node. A handle to the caller communication layer
+ * is passed too. This alleviates for the process of searching the
+ * originating layer of the external event.
+ */
 void COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer){
-	UA_ValueCallback callback = {static_cast<void *>(paLayer), NULL, onWrite};
-	UA_Server_setVariableNode_valueCallback(mOPCUAServer, paNodeId, callback);
+	UA_ValueCallback callback = {static_cast<void *>(paLayer), NULL, COPC_UA_Handler::onWrite()};
+	UA_StatusCode retVal = UA_Server_setVariableNode_valueCallback(mOPCUAServer, paNodeId, callback);
 }
 
-void COPC_UA_Handler::onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
-		const UA_NumericRange *range) {
-	UA_LOG_INFO(logger, UA_LOGCATEGORY_USERLAND, "onWrite; handle: %i", (uintptr_t)h);
+
+void COPC_UA_Handler::onWrite(void *handle, const UA_NodeId nodeid, const UA_Variant *pa_pstValue,
+		const UA_NumericRange *range){
+
+	  forte::com_infra::CComLayer *layer = static_cast<forte::com_infra::CComLayer *>(handle);
+
+	  EComResponse retVal = layer->recvData(static_cast<void *>(pa_pstValue), 0);
+
+
+	  if(e_ProcessDataOk == retVal){
+	    //only update data in item if data could be read
+	    //sfp_item_update_data(pa_pstItem, pa_pstValue, sfp_time_in_millis());
+	  }
+
+	  if(e_Nothing != retVal){
+	    getInstance().startNewEventChain(layer->getCommFB());
+	  }
 }
+
 
 void COPC_UA_Handler::handleWriteNodeCallback(struct sfp_item * pa_pstItem, struct sfp_variant *pa_pstValue, int32_t pa_nOperationID,
 		struct sfp_strategy * pa_pstStrategy,

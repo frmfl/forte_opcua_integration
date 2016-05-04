@@ -56,7 +56,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 				numData = 1;  //register for the item used for the event transmition
 			}
 			for(int i = 0; i < numData; i++){
-				COPC_UA_Handler::getInstance().registerWriteCallBack(mSFPItem[i], this);
+				COPC_UA_Handler::getInstance().registerNodeCallBack(st_ParentChildNodeId.ppNodeId_SrcPoint[i], this);
 			}
 		}
 	}
@@ -214,7 +214,7 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 }
 
 
-EComResponse COPC_UA_Layer::recvData(const void *paData, unsigned int ){
+EComResponse COPC_UA_Layer::recvData(const void *paData, unsigned int padatasize){
 	mInterruptResp = e_ProcessDataOk;
 	const struct sfp_variant *value = static_cast<const struct sfp_variant *>(paData);
 
