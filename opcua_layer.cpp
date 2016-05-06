@@ -47,6 +47,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		dataArray = getCommFB()->getSDs();
 	}
 
+
 	EComResponse retVal = createItems(dataArray, numData, paLayerParameter);
 
 	// Register notification Callback for Subscriber Function Blocks
@@ -104,9 +105,10 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int numSD, char* 
 			DEVLOG_INFO("%s with port ID %i and name %s found\n",CStringDictionary::getInstance().get(getCommFB()->getFBTypeId()), portCnt, myname);
 
 			const CDataConnection* pC_DIConn = getCommFB()->getDIConnection(paDINameId); 	//!< pointer to a Connection Object
-
+			const CDataConnection* pcdicoonnout = getCommFB()->getDOConnection(paDINameId);
+			// FIXME const SConnectionPoint& rst_dstSD(pcdicoonnout->getSourceID());
 			// retrieve connection source point (SP)
-			//const SConnectionPoint& rst_sourceRD = const_cast<const CDataConnection*>(pC_DIConn)->getSourceId();
+			// const SConnectionPoint& rst_sourceRD = const_cast<const CDataConnection*>(pC_DIConn)->getSourceId();
 			const SConnectionPoint& rst_sourceRD(pC_DIConn->getSourceId());
 
 			const CFunctionBlock *sourceFB = rst_sourceRD.mFB;	// pointer to Parent Function Block
@@ -216,7 +218,7 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 
 EComResponse COPC_UA_Layer::recvData(const void *paData, unsigned int padatasize){
 	mInterruptResp = e_ProcessDataOk;
-	const struct sfp_variant *value = static_cast<const struct sfp_variant *>(paData);
+	const struct sfp_variant *value = static_cast<const UA_Variant *>(paData);
 
 	if(0 == getCommFB()->getNumRD()){
 		//we are a subscribe 0
