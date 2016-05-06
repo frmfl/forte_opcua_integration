@@ -310,8 +310,8 @@ void COPC_UA_Handler::updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint
  * originating layer of the external event.
  */
 void COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer){
-	UA_ValueCallback callback = {static_cast<void *>(paLayer), NULL, COPC_UA_Handler::onWrite()};
-	UA_StatusCode retVal = UA_Server_setVariableNode_valueCallback(mOPCUAServer, paNodeId, callback);
+	UA_ValueCallback callback = {static_cast<void *>(paLayer), NULL, onWrite};
+	UA_StatusCode retVal = UA_Server_setVariableNode_valueCallback(mOPCUAServer, *paNodeId, callback);
 }
 
 
