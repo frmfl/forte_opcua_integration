@@ -2,6 +2,11 @@
 # OPC_UA Protocol Com Layer
 #############################################################################
 
+# CMake for Publish Subscribe Function Blocks
+forte_add_module(OPC_UA "OPC_UA Function Blocks")
+forte_add_sourcefile_hcpp(OPCUA_NodeConfig NodeConfig GEN_SUBSCRIBE_OPCUA)
+
+
 forte_add_definition(-std=c++11)
 #include(CheckCXXCompilerFlag)
 #CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
