@@ -22,6 +22,7 @@
 #include "funcbloc.h"
 #include <stdio.h>
 #include "../../arch/devlog.h"
+#include "comlayer.h"
 
 
 class COPC_UA_Handler : public CExternalEventHandler, public CThread{
@@ -44,32 +45,31 @@ public:
 	UA_StatusCode getSPNodeId(const CFunctionBlock *pCFB, SConnectionPoint& sourceRD, UA_NodeId* returnSPNodeId);		// get source point (SP) NodeId
 	UA_StatusCode createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
 	UA_StatusCode createUAObjNode(const CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
-
+	//UA_StatusCode createUAMethodNode(const CFunctionBlock* pCFB, UA_NodeId * returnMethodNodeId);
 	/* OPC_UA Handler interaction */
 	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
 	void registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer);
 	static void onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
 			const UA_NumericRange *range);
-	void handleWriteNodeCallback();		// Value Callback on write UA_Variable Node
+	// void handleWriteNodeCallback();		// Value Callback on write UA_Variable Node
 
 
 protected:
 
 private:
 	// OPC_UA Server and configuration
-	UA_Server * mOPCUAServer;
-	UA_ServerConfig m_server_config;
+	struct UA_Server *mOPCUAServer;
+	struct UA_ServerConfig m_server_config;
 
 	// OPC_UA Client and configuration
 	volatile UA_Boolean* mbServerRunning = new UA_Boolean(UA_TRUE);
-	UA_ServerNetworkLayer m_server_networklayer;
+	struct UA_ServerNetworkLayer m_server_networklayer;
 
 
 	void setServerRunning();
 	void stopServerRunning();
 	//static forte::com_infra::EComResponse m_eComResponse;
 	void configureUAServer();
-	void createUAServer();
 
 	// implementation of thread.h virtual method start
 	virtual void run();
