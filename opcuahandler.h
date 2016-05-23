@@ -14,7 +14,7 @@
 #ifndef SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
 #define SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
 
-#include <open62541/build/open62541.h>
+#include <open62541/build/open62541.c>
 #include <singlet.h>
 #include <thread.h>
 #include <extevhan.h>
@@ -24,6 +24,8 @@
 #include "../../arch/devlog.h"
 #include "comlayer.h"
 
+//FIXME add network layer by specification
+//fbdk[].opc_ua[tcp://localhost:1883, ClientID, Topic]
 
 class COPC_UA_Handler : public CExternalEventHandler, public CThread{
 	DECLARE_SINGLETON(COPC_UA_Handler);
@@ -59,11 +61,11 @@ protected:
 private:
 	// OPC_UA Server and configuration
 	struct UA_Server *mOPCUAServer;
-	struct UA_ServerConfig m_server_config;
+	UA_ServerConfig m_server_config;
 
 	// OPC_UA Client and configuration
 	volatile UA_Boolean* mbServerRunning = new UA_Boolean(UA_TRUE);
-	struct UA_ServerNetworkLayer m_server_networklayer;
+	UA_ServerNetworkLayer m_server_networklayer;
 
 
 	void setServerRunning();

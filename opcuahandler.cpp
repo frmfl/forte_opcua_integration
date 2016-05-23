@@ -49,7 +49,7 @@ const int COPC_UA_Handler::scmUADataTypeMapping[] = {
 		UA_TYPES_STRING, //e_STRING
 		UA_TYPES_STRING //e_WSTRING,
 
-		//TODO implement mapping for following datatypes.
+		//FIXME add mapping for following datatypes.
 		//e_DerivedData,
 		//e_DirectlyDerivedData,
 		//e_EnumeratedData,
@@ -65,7 +65,11 @@ void COPC_UA_Handler::configureUAServer() {
 	m_server_config.enableUsernamePasswordLogin = false;
 	m_server_config.networkLayersSize = 1;
 	m_server_config.logger = Logger_Stdout;
-	m_server_networklayer = UA_ServerNetworkLayerTCP(UA_ConnectionConfig_standard, 16664); //FIXME use port and address from Publisher ID input
+
+	/*
+	 * FIXME use port and address from Publisher ID input
+	 */
+	m_server_networklayer = UA_ServerNetworkLayerTCP(UA_ConnectionConfig_standard, 16664);
 	m_server_config.networkLayers = &m_server_networklayer;
 }
 
@@ -74,6 +78,7 @@ COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
 	configureUAServer(); 	// configure a standard server
 	mOPCUAServer = UA_Server_new(m_server_config);
 	setServerRunning();		// set server loop flag
+
 
 	if(!isAlive()){
 		//thread is not running start it
