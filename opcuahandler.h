@@ -14,7 +14,7 @@
 #ifndef SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
 #define SRC_MODULES_OPC_UA_OPCUAHANDLER_H_
 
-#include <open62541/build/open62541.c>
+#include <open62541/build/open62541.h>
 #include <singlet.h>
 #include <thread.h>
 #include <extevhan.h>

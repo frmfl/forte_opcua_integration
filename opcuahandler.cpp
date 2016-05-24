@@ -79,6 +79,9 @@ COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
 	mOPCUAServer = UA_Server_new(m_server_config);
 	setServerRunning();		// set server loop flag
 
+	char *UANamespace = "4DIAC_System";
+	UA_UInt16 systemNamespace = UA_Server_addNamespace(mOPCUAServer, UANamespace);
+
 
 	if(!isAlive()){
 		//thread is not running start it
