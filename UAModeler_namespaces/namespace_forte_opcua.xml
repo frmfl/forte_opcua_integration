@@ -1,0 +1,43 @@
+<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" xmlns:s1="https://eclipse.org/4diac/OPCUA/FORTE/Types.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <NamespaceUris>
+        <Uri>https://eclipse.org/4diac/OPCUA/FORTE</Uri>
+    </NamespaceUris>
+    <Aliases>
+        <Alias Alias="Boolean">i=1</Alias>
+        <Alias Alias="Organizes">i=35</Alias>
+        <Alias Alias="HasTypeDefinition">i=40</Alias>
+        <Alias Alias="HasComponent">i=47</Alias>
+    </Aliases>
+    <Extensions>
+        <Extension>
+            <ModelInfo Tool="UaModeler" Hash="ZnlnM2LEiwPlgh7VoIGGIQ==" Version="1.4.3"/>
+        </Extension>
+    </Extensions>
+    <UAObject SymbolicName="Source_FB" NodeId="ns=1;s=&quot;Source_FB&quot;" BrowseName="1:Pub_Source_FB_Browse">
+        <DisplayName>Publisher_Source_FB_Disp</DisplayName>
+        <Description>Publisher Source FB</Description>
+        <References>
+            <Reference ReferenceType="HasComponent">ns=1;s="IDQ"</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+        </References>
+    </UAObject>
+    <UAVariable SymbolicName="Q" DataType="Boolean" NodeId="ns=1;s=&quot;IDQ&quot;" BrowseName="1:VarQ" UserAccessLevel="3" AccessLevel="3">
+        <DisplayName>Published_Q</DisplayName>
+        <Description>Bool_Published_from_Q</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;s="Source_FB"</Reference>
+        </References>
+        <Value>
+            <uax:Boolean>false</uax:Boolean>
+        </Value>
+    </UAVariable>
+    <UAObject NodeId="ns=1;i=5002" BrowseName="1:Field_Device">
+        <DisplayName>Field_Device</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=58</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">i=2253</Reference>
+        </References>
+    </UAObject>
+</UANodeSet>
