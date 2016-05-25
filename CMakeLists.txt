@@ -30,6 +30,8 @@ SET(FORTE_COM_OPC_UA_DIR "" CACHE PATH "Path to the OPC_UA (open62541 library) b
 
 forte_add_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+option(FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE "Include an external INIT server namespace" OFF)
+
 
 
 if(FORTE_COM_OPC_UA)
