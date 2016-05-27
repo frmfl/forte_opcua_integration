@@ -50,48 +50,47 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		/*
 		 * Differentiate if nodes need to be created or exist in address space
 		 */
-		#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 		// Create Nodes from model architecture
 		retVal = createItems(dataArray, numData, paLayerParameter);
 
-		#endif
+#endif
 
-		// Get NodeId from NodeConfig FunctionBlock
+		UA_NodeId publisherTarget;
+		UA_NodeId_init(&publisherTarget);
+		//FIXME finish loop
+		UA_Variant handleNodeId;
+		for(int i = 0; i<=2; i++){
 
+			UA_Variant_setScalarCopy(&handleNodeId, static_cast<const void*>(dataArray[i].getConstDataPtr()),
+					&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[i].getDataTypeID()]]);
 
-		if(st_ParentChildNodeId.ppNodeId_SrcPoint[i]){
-			// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
-			COPC_UA_Handler::getInstance().updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], paDataArray[i]);
-
-		}else {
-			retVal = e_InitInvalidId;
-			break;
+			publisherTarget.namespaceIndex = handleNodeId;
+			publisherTarget.identifierType = dataArray[4];
+			publisherTarget.identifier = dataArray[5];
 		}
+
+
+
+		// Get NodeId from NodeConfig FunctionBloc
 
 	} else{
 
 		/*
-			 * Subscriber
-			 */
-			// Subscribe has initial value and then new one after each update.
+		 * Subscriber
+		 */
+		// Subscribe has initial value and then new one after each update.
 		numData = getCommFB()->getNumRD();
 		dataArray = getCommFB()->getRDs();
 
-		#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 
 
-		#endif
+#endif
 
 
 
 	}
-
-
-
-
-
-
-
 
 	// create node
 	// register publisher
