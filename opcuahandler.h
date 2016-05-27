@@ -55,6 +55,8 @@ public:
 			const UA_NumericRange *range);
 	// void handleWriteNodeCallback();		// Value Callback on write UA_Variable Node
 
+	static const int scmUADataTypeMapping[];
+
 
 protected:
 
@@ -78,7 +80,7 @@ private:
 
 	void registerNode();
 
-	static const int scmUADataTypeMapping[];
+
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUAHANDLER_H_ */
