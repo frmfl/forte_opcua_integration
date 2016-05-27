@@ -15,6 +15,7 @@
 #include <string.h>
 #include <cstdbool>
 #include <commfb.h>
+#include "open62541/build/src_generated/ua_namespaceinit_generated.h"
 
 using namespace forte::com_infra;
 
@@ -77,10 +78,13 @@ COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
 
 	configureUAServer(); 	// configure a standard server
 	mOPCUAServer = UA_Server_new(m_server_config);
+	flipflop_custom_ns(mOPCUAServer);
 	setServerRunning();		// set server loop flag
 
+	/*
 	char *UANamespace = "4DIAC_System";
 	UA_UInt16 systemNamespace = UA_Server_addNamespace(mOPCUAServer, UANamespace);
+	 */
 
 
 	if(!isAlive()){
@@ -203,22 +207,26 @@ UA_StatusCode COPC_UA_Handler::createUAObjNode(const CFunctionBlock* pCFB, UA_No
 	UA_ObjectAttributes obj_attr;
 	UA_ObjectAttributes_init(&obj_attr);
 	char dispName[32];
-	sprintf(dispName, "FB-%s\n", srcFBName);
+	sprintf(dispName, "FB1-%s\n", srcFBName);
 	obj_attr.displayName = UA_LOCALIZEDTEXT("en_US", dispName);
 	char descpName[64];
-	sprintf(descpName, "Object node of FB-%s, origin: Publisher\n", srcFBName);
+	sprintf(descpName, "Object node of FB1-%s, origin: Publisher\n", srcFBName);
 
 	obj_attr.description =  UA_LOCALIZEDTEXT("en_US", descpName);
+
+	UA_InstantiationCallback* instCallback = NULL; //((void *)0);	// Nullpointer as callback for this Node
 	UA_NodeId * returnNodeId = UA_NodeId_new();
+
+	// Add Object Node to the Server.
 	UA_StatusCode retVal = UA_Server_addObjectNode(
 			mOPCUAServer,                 // server
 			newObjNodeId,              	  // requestedNewNodeId
 			parentNodeId,                 // parentNodeId
-			referenceTypeId,        // referenceTypeId
+			referenceTypeId,        	  // referenceTypeId
 			objBrowseName,                // browseName
 			objTypeDefinition,            // typeDefinition
 			obj_attr,                     // Variable attributes
-			NULL,                         // instantiation callback
+			instCallback,                 // instantiation callback
 			returnNodeId);			  	  // return Node Id
 
 	if(retVal == UA_STATUSCODE_GOOD){
@@ -251,9 +259,9 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConn
 	// set UA NodeId attributes
 	UA_NodeId newVarNodeId = UA_NODEID_STRING_ALLOC(1,SPName);
 	UA_NodeId parentNodeId = UA_NODEID_STRING_ALLOC(1, srcFBName);
-	UA_NodeId referenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+	UA_NodeId referenceTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT);
 	char browsename[32];
-	sprintf(browsename, "%s\n", SPName);
+	sprintf(browsename, "Test-%s\n", SPName);
 	UA_QualifiedName varBrowseName = UA_QUALIFIEDNAME(1, browsename);
 	UA_NodeId typeDefinition = UA_NODEID_NULL;
 
@@ -271,9 +279,10 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConn
 	var_attr.description = UA_LOCALIZEDTEXT("en_US", "SD port of Publisher");
 	UA_Variant_setScalar(&var_attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
 
+	UA_InstantiationCallback* instCallback = NULL; //((void *)0);	// Nullpointer as callback for this Node
+	UA_NodeId * returnNodeId = UA_NodeId_new();
 
 	// add UA Variable Node to the server address space
-	UA_NodeId * returnNodeId = UA_NodeId_new();
 	UA_StatusCode retVal = UA_Server_addVariableNode(
 			mOPCUAServer,                 // server
 			newVarNodeId,              	  // requestedNewNodeId
@@ -282,7 +291,7 @@ UA_StatusCode COPC_UA_Handler::createUAVarNode(const CFunctionBlock* pCFB, SConn
 			varBrowseName,                // browseName
 			typeDefinition,               // typeDefinition
 			var_attr,                     // Variable attributes
-			NULL,                         // instantiation callback
+			instCallback,                 // instantiation callback
 			returnNodeId);			  	  // return Node Id
 
 
@@ -306,7 +315,7 @@ UA_NODEID_NUMERIC;
 UA_NS0ID_OBJECTSFOLDER
 namespace
 UA_NS0ID_HASCOMPONENT
-*/
+ */
 
 /*
  * Create OPC UA Method Node in Server Address Space
@@ -466,9 +475,10 @@ void COPC_UA_Handler::updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint
  * is passed too. This alleviates for the process of searching the
  * originating layer of the external event.
  */
-void COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer){
+UA_StatusCode COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer){
 	UA_ValueCallback callback = {static_cast<void *>(paLayer), NULL, onWrite};
 	UA_StatusCode retVal = UA_Server_setVariableNode_valueCallback(mOPCUAServer, *paNodeId, callback);
+	return retVal;
 }
 
 
@@ -488,7 +498,7 @@ void COPC_UA_Handler::onWrite(void *handle, const UA_NodeId nodeid, const UA_Var
 	if(e_Nothing != retVal){
 		getInstance().startNewEventChain(layer->getCommFB());
 	}
-	*/
+	 */
 }
 
 /*

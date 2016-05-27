@@ -50,7 +50,7 @@ public:
 	//UA_StatusCode createUAMethodNode(const CFunctionBlock* pCFB, UA_NodeId * returnMethodNodeId);
 	/* OPC_UA Handler interaction */
 	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
-	void registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer);
+	UA_StatusCode registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer);
 	static void onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
 			const UA_NumericRange *range);
 	// void handleWriteNodeCallback();		// Value Callback on write UA_Variable Node
@@ -60,7 +60,7 @@ protected:
 
 private:
 	// OPC_UA Server and configuration
-	struct UA_Server *mOPCUAServer;
+	UA_Server *mOPCUAServer;
 	UA_ServerConfig m_server_config;
 
 	// OPC_UA Client and configuration
