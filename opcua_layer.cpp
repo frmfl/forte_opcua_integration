@@ -35,20 +35,70 @@ void COPC_UA_Layer::closeConnection(){
 
 
 EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
+	EComResponse retVal;
 	int numData;
 	CIEC_ANY *dataArray;
 
-	if(e_Subscriber == getCommFB()->getComServiceType()){
+	/*
+	 * Publisher
+	 */
+	if(e_Publisher == getCommFB()->getComServiceType()){
+
+		numData = getCommFB()->getNumSD();
+		dataArray = getCommFB()->getSDs();
+
+		/*
+		 * Differentiate if nodes need to be created or exist in address space
+		 */
+		#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+		// Create Nodes from model architecture
+		retVal = createItems(dataArray, numData, paLayerParameter);
+
+		#endif
+
+		// Get NodeId from NodeConfig FunctionBlock
+
+
+		if(st_ParentChildNodeId.ppNodeId_SrcPoint[i]){
+			// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
+			COPC_UA_Handler::getInstance().updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], paDataArray[i]);
+
+		}else {
+			retVal = e_InitInvalidId;
+			break;
+		}
+
+	} else{
+
+		/*
+			 * Subscriber
+			 */
+			// Subscribe has initial value and then new one after each update.
 		numData = getCommFB()->getNumRD();
 		dataArray = getCommFB()->getRDs();
 
-	}else{
-		numData = getCommFB()->getNumSD();
-		dataArray = getCommFB()->getSDs();
+		#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+
+
+		#endif
+
+
+
 	}
 
 
-	EComResponse retVal = createItems(dataArray, numData, paLayerParameter);
+
+
+
+
+
+
+	// create node
+	// register publisher
+	// create node + register publisher
+	// register callback to subscriber node
+	// create node + register subscriber callback to node
+
 
 	// Register notification Callback for Subscriber Function Blocks
 	if(e_InitOk == retVal){
@@ -177,16 +227,6 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int numSD, char* 
 					retVal = retValcreateVarNode;
 
 				}
-
-				if(st_ParentChildNodeId.ppNodeId_SrcPoint[i]){
-					// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
-					COPC_UA_Handler::getInstance().updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], paDataArray[i]);
-
-				}else {
-					retVal = e_InitInvalidId;
-					break;
-				}
-
 			}
 		}
 
@@ -216,9 +256,9 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 }
 
 
-EComResponse COPC_UA_Layer::recvData(const void *paData, unsigned int padatasize){
+EComResponse COPC_UA_Layer::recvData(const void * pa_pvData, unsigned int pa_unSize){
 	mInterruptResp = e_ProcessDataOk;
-	const struct sfp_variant *value = static_cast<const UA_Variant *>(paData);
+	/*const struct sfp_variant *value = static_cast<const UA_Variant *>(paData);
 
 	if(0 == getCommFB()->getNumRD()){
 		//we are a subscribe 0
@@ -232,8 +272,8 @@ EComResponse COPC_UA_Layer::recvData(const void *paData, unsigned int padatasize
 		}
 	}
 
-	getCommFB()->interruptCommFB(this);
-	return mInterruptResp;
+	 */getCommFB()->interruptCommFB(this);
+	 return mInterruptResp;
 }
 
 EComResponse COPC_UA_Layer::processInterrupt(){
