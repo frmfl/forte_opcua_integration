@@ -175,6 +175,7 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 
 	CStringDictionary::TStringId SPNameId = sourceFBInterface->m_aunDONames[sourceRD.mPortId];
 	const char * SPName = CStringDictionary::getInstance().get(SPNameId);
+
 	UA_NodeId SPNodeId = UA_NODEID_STRING_ALLOC(1, SPName);
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
@@ -184,6 +185,28 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 	}else{
 		retVal = UA_NodeId_copy(returnNodeId, returnSPNodeId);	// reading successful, return NodeId
 	};
+	return retVal;
+}
+
+UA_StatusCode COPC_UA_Handler::assembleUANodeId(const CIEC_ANY* dataArray, UA_NodeId *returnNodeId){
+	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
+	UA_Variant* valueVar = UA_Variant_new();
+
+	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
+			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
+
+	returnNodeId->namespaceIndex = *valueVar;
+
+	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[3].getConstDataPtr()),
+			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
+
+	returnNodeId->identifierType = *valueVar;
+
+	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[4].getConstDataPtr()),
+			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
+
+	returnNodeId->identifier = *valueVar;
+
 	return retVal;
 }
 

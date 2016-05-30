@@ -48,6 +48,8 @@ public:
 	UA_StatusCode createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
 	UA_StatusCode createUAObjNode(const CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
 	//UA_StatusCode createUAMethodNode(const CFunctionBlock* pCFB, UA_NodeId * returnMethodNodeId);
+	UA_StatusCode assembleUANodeId(const CIEC_ANY* NodeAttributes, UA_NodeId *returnNodeId);
+
 	/* OPC_UA Handler interaction */
 	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
 	UA_StatusCode registerNodeCallBack(UA_NodeId *paNodeId, forte::com_infra::CComLayer *paLayer);
