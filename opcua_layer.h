@@ -39,10 +39,11 @@ private:
 
 	forte::com_infra::EComResponse mInterruptResp;
 
-	struct {
+	/* struct {
 		UA_NodeId **ppNodeId_ParentFB;	//!< pointer to the array of Parent FunctionBlock NodeIds managed by the OPC_UA Server Stack
 		UA_NodeId **ppNodeId_SrcPoint;
 	} st_ParentChildNodeId;	//!< pointer to the array of SourcePoint (SDs) NodeIds managed by the OPC_UA Server Stack
+	 */
 
 	UA_NodeId **m_apUANodeId;
 };
