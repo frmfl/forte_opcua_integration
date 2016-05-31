@@ -19,7 +19,7 @@
 using namespace forte::com_infra;
 
 
-COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB){
+COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(0){
 	// constructor list initialization
 }
 
@@ -39,74 +39,60 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 	int numData;
 	CIEC_ANY *dataArray;
 
-	/*
-	 * Publisher
-	 */
+
+	/* PUBLISHER */
 	if(e_Publisher == getCommFB()->getComServiceType()){
 
 		numData = getCommFB()->getNumSD();
 		dataArray = getCommFB()->getSDs();
+		int numRDData = getCommFB()->getNumRD();
+
 
 		/*
 		 * Differentiate if nodes need to be created or exist in address space
+		 * Differentiate if publisher is a GEN_OPCUA_PUBLISHER or regular GEN_PUBLISHER
+		 * IF exist pass pointer to data to handler
 		 */
 #ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 		// Create Nodes from model architecture
 		retVal = createItems(dataArray, numData, paLayerParameter);
+		//FIXME add publish init value in create items
 
 #endif
+		m_apUANodeId = new UA_NodeId *[1];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
+		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * 1);
 
-		UA_NodeId publisherTarget;
-		UA_NodeId_init(&publisherTarget);
-		//FIXME finish loop
-		UA_Variant handleNodeId;
-		for(int i = 0; i<=2; i++){
+		COPC_UA_Handler::getInstance().assembleUANodeId(dataArray, m_apUANodeId[1]);	// Assemble node id from ANodeId Adapter information
 
-			UA_Variant_setScalarCopy(&handleNodeId, static_cast<const void*>(dataArray[i].getConstDataPtr()),
-					&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[i].getDataTypeID()]]);
+		// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
+		COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], dataArray[1]);
 
-			publisherTarget.namespaceIndex = handleNodeId;
-			publisherTarget.identifierType = dataArray[4];
-			publisherTarget.identifier = dataArray[5];
-		}
-
-
-
-		// Get NodeId from NodeConfig FunctionBloc
 
 	} else{
 
-		/*
-		 * Subscriber
-		 */
+		/* SUBSCRIBER */
 		// Subscribe has initial value and then new one after each update.
 		numData = getCommFB()->getNumRD();
 		dataArray = getCommFB()->getRDs();
 
-#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 
 
-#endif
+		// create node
+		// register publisher
+		// create node + register publisher
+		// register callback to subscriber node
+		// create node + register subscriber callback to node
 
 
-
-	}
-
-	// create node
-	// register publisher
-	// create node + register publisher
-	// register callback to subscriber node
-	// create node + register subscriber callback to node
-
-
-	// Register notification Callback for Subscriber Function Blocks
-	if(e_InitOk == retVal){
-		if(e_Subscriber == getCommFB()->getComServiceType()){
-			if(0 == numData){
-				numData = 1;  //register for the item used for the event transmition
-			}
-			for(int i = 0; i < numData; i++){
-				COPC_UA_Handler::getInstance().registerNodeCallBack(st_ParentChildNodeId.ppNodeId_SrcPoint[i], this);
+		// Register notification Callback for Subscriber Function Blocks
+		if(e_InitOk == retVal){
+			if(e_Subscriber == getCommFB()->getComServiceType()){
+				if(0 == numData){
+					numData = 1;  //register for the item used for the event transmission
+				}
+				for(int i = 0; i < numData; i++){
+					COPC_UA_Handler::getInstance().registerNodeCallBack(st_ParentChildNodeId.ppNodeId_SrcPoint[i], this);
+				}
 			}
 		}
 	}
@@ -247,7 +233,7 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	}else {
 		CIEC_ANY const *SDs(static_cast<const CIEC_ANY*>(paData));	// direct initialization of pointer to CIEC_ANY class
 		for(unsigned int i = 0; i < paSize; i++){
-			//COPC_UA_Handler::updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], SDs[i]);
+			COPC_UA_Handler::updateNodeValue(st_ParentChildNodeId.ppNodeId_SrcPoint[i], SDs[i]);
 			break;
 		}
 	}
