@@ -23,10 +23,9 @@
 #include <forte_usint.h>
 #include <forte_any.h>
 
-//#ERROR type contains variables of type ANY. Please check the usage of these variables as we can not gurantee correct usage on export!
 
 #include <forte_uint.h>
-#include "ANodeID.h"
+#include "AOPCUANodeID.h"
 
 class FORTE_OPCUA_NodeID: public CBasicFB{
   DECLARE_FIRMWARE_FB(FORTE_OPCUA_NodeID)
@@ -59,10 +58,10 @@ private:
 
   static const SAdapterInstanceDef scm_astAdapterInstances[];
 
-  FORTE_ANodeID& ANodeID() {
-    return (*static_cast<FORTE_ANodeID*>(m_apoAdapters[0]));
+  FORTE_AOPCUANodeID& AOPCUANodeID() {
+    return (*static_cast<FORTE_AOPCUANodeID*>(m_apoAdapters[0]));
   };
-  static const int scm_nANodeIDAdpNum = 0;
+  static const int scm_nAOPCUANodeIDAdpNum = 0;
   static const SFBInterfaceSpec scm_stFBInterfaceSpec;
 
    FORTE_BASIC_FB_DATA_ARRAY(2, 3, 0, 0, 1);

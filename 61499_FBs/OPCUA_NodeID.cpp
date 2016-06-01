@@ -28,7 +28,7 @@ const TForteInt16 FORTE_OPCUA_NodeID::scm_anEOWithIndexes[] = {-1, -1, -1};
 const CStringDictionary::TStringId FORTE_OPCUA_NodeID::scm_anEventOutputNames[] = {g_nStringIdINITO, g_nStringIdCNF};
 
 const SAdapterInstanceDef FORTE_OPCUA_NodeID::scm_astAdapterInstances[] = {
-{g_nStringIdANodeID, g_nStringIdANodeID, true }};
+{g_nStringIdAOPCUANodeID, g_nStringIdAOPCUANodeID, true }};
 
 const SFBInterfaceSpec FORTE_OPCUA_NodeID::scm_stFBInterfaceSpec = {
   2,  scm_anEventInputNames,  scm_anEIWith,  scm_anEIWithIndexes,
@@ -37,9 +37,9 @@ const SFBInterfaceSpec FORTE_OPCUA_NodeID::scm_stFBInterfaceSpec = {
   1,scm_astAdapterInstances};
 
 void FORTE_OPCUA_NodeID::alg_sendNodeId(void){
-ANodeID().nsIndex() = nsIndex();
-ANodeID().identifierType() = identifierType();
-ANodeID().identifier() = identifier();
+AOPCUANodeID().nsIndex() = nsIndex();
+AOPCUANodeID().identifierType() = identifierType();
+AOPCUANodeID().identifier() = identifier();
 }
 
 
