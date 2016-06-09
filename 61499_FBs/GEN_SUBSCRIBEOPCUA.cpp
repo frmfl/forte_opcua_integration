@@ -11,7 +11,7 @@
  *    - initial API and implementation and/or initial documentation
  *******************************************************************************/
 
-#include "GEN_SUBSCRIBE_OPCUA.h"
+#include "GEN_SUBSCRIBEOPCUA.h"
 
 DEFINE_GENERIC_FIRMWARE_FB(GEN_SUBSCRIBE_OPCUA, g_nStringIdGEN_SUBSCRIBE_OPCUA)
 
