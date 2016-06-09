@@ -6,26 +6,15 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Alois Zoitl, Rene Smodic, Gerhard Ebenhofer, Martin Melik Merkumians
+ *   Alois Zoitl, Rene Smodic, THomas Strasser, Gerhard Ebenhofer, Ingo Hegny,
+ *   Martin Melik Merkumians
  *    - initial API and implementation and/or initial documentation
  *******************************************************************************/
-#ifndef _GEN_PUBLISH_OPCUA_H_
-#define _GEN_PUBLISH_OPCUA_H_
+#include "GEN_PUBLISHOPCUA.h"
 
-#include "../../core/cominfra/commfb.h"
+DEFINE_GENERIC_FIRMWARE_FB(GEN_PUBLISHOPCUA, g_nStringIdGEN_PUBLISHOPCUA)
 
-/*! \brief Implementation of the PUBLISH SIFB.
- */
-
-class GEN_PUBLISH_OPCUA : public forte::com_infra::CCommFB {
-DECLARE_GENERIC_FIRMWARE_FB(GEN_PUBLISH_OPCUA)
-
-public:
-  GEN_PUBLISH_OPCUA(const CStringDictionary::TStringId pa_nInstanceNameId, CResource *pa_poSrcRes);
-  virtual ~GEN_PUBLISH_OPCUA(){};
-};
-
-#endif //_GEN_PUBLISH_OPCUA_H_
-
-
-
+GEN_PUBLISHOPCUA::GEN_PUBLISHOPCUA(const CStringDictionary::TStringId pa_nInstanceNameId, CResource *pa_poSrcRes):
+forte::com_infra::CCommFB( pa_nInstanceNameId, pa_poSrcRes, forte::com_infra::e_Publisher){
+             //CNetCommFB( pa_nInstanceNameId, pa_poSrcRes, true, scm_nSendBufferSize, 0, CCommFB::e_Publisher){
+}

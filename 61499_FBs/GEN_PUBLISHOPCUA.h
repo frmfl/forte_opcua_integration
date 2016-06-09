@@ -6,15 +6,26 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Alois Zoitl, Rene Smodic, THomas Strasser, Gerhard Ebenhofer, Ingo Hegny,
- *   Martin Melik Merkumians
+ *   Alois Zoitl, Rene Smodic, Gerhard Ebenhofer, Martin Melik Merkumians
  *    - initial API and implementation and/or initial documentation
  *******************************************************************************/
-#include "GEN_PUBLISH_OPCUA.h"
+#ifndef _GEN_PUBLISHOPCUA_H_
+#define _GEN_PUBLISHOPCUA_H_
 
-DEFINE_GENERIC_FIRMWARE_FB(GEN_PUBLISH_OPCUA, g_nStringIdGEN_PUBLISH_OPCUA)
+#include "../../core/cominfra/commfb.h"
 
-GEN_PUBLISH_OPCUA::GEN_PUBLISH_OPCUA(const CStringDictionary::TStringId pa_nInstanceNameId, CResource *pa_poSrcRes):
-forte::com_infra::CCommFB( pa_nInstanceNameId, pa_poSrcRes, forte::com_infra::e_Publisher){
-             //CNetCommFB( pa_nInstanceNameId, pa_poSrcRes, true, scm_nSendBufferSize, 0, CCommFB::e_Publisher){
-}
+/*! \brief Implementation of the PUBLISH SIFB.
+ */
+
+class GEN_PUBLISHOPCUA : public forte::com_infra::CCommFB {
+DECLARE_GENERIC_FIRMWARE_FB(GEN_PUBLISHOPCUA)
+
+public:
+  GEN_PUBLISHOPCUA(const CStringDictionary::TStringId pa_nInstanceNameId, CResource *pa_poSrcRes);
+  virtual ~GEN_PUBLISHOPCUA(){};
+};
+
+#endif //_GEN_PUBLISHOPCUA_H_
+
+
+
