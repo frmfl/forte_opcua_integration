@@ -7,7 +7,7 @@ forte_add_module(OPC_UA "OPC_UA Function Blocks")
 
 set(OPCUA_FB_PATH "/61499_FBs")
 
-forte_add_sourcefile_hcpp(${OPCUA_FB_PATH}/AOPCUANodeID ${OPCUA_FB_PATH}/GEN_SUBSCRIBE_OPCUA ${OPCUA_FB_PATH}/GEN_PUBLISH_OPCUA ${OPCUA_FB_PATH}/OPCUA_NodeID)
+forte_add_sourcefile_hcpp(${OPCUA_FB_PATH}/AOPCUANodeID ${OPCUA_FB_PATH}/GEN_SUBSCRIBEOPCUA ${OPCUA_FB_PATH}/GEN_PUBLISHOPCUA ${OPCUA_FB_PATH}/OPCUA_NodeID)
 
 
 forte_add_definition(-std=c++11)
