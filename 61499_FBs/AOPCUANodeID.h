@@ -16,7 +16,7 @@
 #include <forte_usint.h>
 #include <forte_any.h>
 
-
+#ERROR type contains variables of type ANY. Please check the usage of these variables as we can not gurantee correct usage on export!
 
 #include <forte_uint.h>
 
@@ -25,33 +25,33 @@ class FORTE_AOPCUANodeID: public CAdapter{
 
 private:
  private:
-  static const CStringDictionary::TStringId scm_anDataInputNames[];
-  static const CStringDictionary::TStringId scm_anDataInputTypeIds[];
+  static const CStringDictionary::TStringId scm_anDataOutputNames[];
+  static const CStringDictionary::TStringId scm_anDataOutputTypeIds[];
  public:
   CIEC_UINT &nsIndex() {
-    return *static_cast<CIEC_UINT*>((isSocket()) ? getDI(0) : getDO(0));
+    return *static_cast<CIEC_UINT*>((isSocket()) ? getDO(0) : getDI(0));
   };
 
   CIEC_USINT &identifierType() {
-    return *static_cast<CIEC_USINT*>((isSocket()) ? getDI(1) : getDO(1));
+    return *static_cast<CIEC_USINT*>((isSocket()) ? getDO(1) : getDI(1));
   };
 
   CIEC_ANY &identifier() {
-    return *static_cast<CIEC_ANY*>((isSocket()) ? getDI(2) : getDO(2));
+    return *static_cast<CIEC_ANY*>((isSocket()) ? getDO(2) : getDI(2));
   };
 
  public:
  private:
   static const TForteInt16 scm_anEIWithIndexes[];
-  static const TDataIOID scm_anEIWith[];
  public:
  private:
   static const TForteInt16 scm_anEOWithIndexes[];
+  static const TDataIOID scm_anEOWith[];
   static const SFBInterfaceSpec scm_stFBInterfaceSpecSocket;
 
   static const SFBInterfaceSpec scm_stFBInterfaceSpecPlug;
 
-   FORTE_ADAPTER_DATA_ARRAY(0, 0, 3, 0, 0);
+   FORTE_ADAPTER_DATA_ARRAY(0, 0, 0, 3, 0);
 
 public:
   ADAPTER_CTOR(FORTE_AOPCUANodeID){
