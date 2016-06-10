@@ -19,7 +19,7 @@
 using namespace forte::com_infra;
 
 
-COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(0){
+COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(e_Nothing){
 	// constructor list initialization
 }
 
@@ -35,7 +35,8 @@ void COPC_UA_Layer::closeConnection(){
 
 
 EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
-	EComResponse retVal;
+	EComResponse retValEcom = e_InitOk;
+	UA_StatusCode retValUA;
 	int numData;
 	CIEC_ANY *dataArray;
 
@@ -47,15 +48,6 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		dataArray = getCommFB()->getSDs();
 		int numRDData = getCommFB()->getNumRD();
 
-		// allocate memory for an array of pointers to pointers pointing to values of type NodeId
-		//st_ParentChildNodeId.ppNodeId_ParentFB = new UA_NodeId *[numSD];
-		//st_ParentChildNodeId.ppNodeId_SrcPoint = new UA_NodeId *[numSD];
-
-		//memset(st_ParentChildNodeId.ppNodeId_ParentFB, 0, sizeof(UA_NodeId *) * numSD);		//!< initialize pointer memory: multiply size of NodeID pointer with amount
-		//memset(st_ParentChildNodeId.ppNodeId_SrcPoint, 0, sizeof(UA_NodeId *) * numSD);		//!< initialize pointer memory: multiply size of NodeID pointer with amount
-
-
-
 		/*
 		 * Differentiate if nodes need to be created or exist in address space
 		 * Differentiate if publisher is a GEN_OPCUA_PUBLISHER or regular GEN_PUBLISHER
@@ -63,7 +55,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		 */
 #ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 		// Create Nodes from model architecture
-		retVal = createItems(dataArray, numData, paLayerParameter);
+		retValUA = createItems(dataArray, numData, paLayerParameter);
 		//FIXME add publish init value in create items
 
 #endif
@@ -83,6 +75,14 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		numData = getCommFB()->getNumRD();
 		dataArray = getCommFB()->getRDs();
 
+		m_apUANodeId = new UA_NodeId *[1];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
+		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * 1);
+
+		COPC_UA_Handler::getInstance().assembleUANodeId(dataArray, m_apUANodeId[1]);	// Assemble node id from ANodeId Adapter information
+
+		// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
+		COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], dataArray[1]);
+
 
 
 		// create node
@@ -93,23 +93,17 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 
 
 		// Register notification Callback for Subscriber Function Blocks
-		if(e_InitOk == retVal){
+		if(e_InitOk == retValEcom){
 			if(e_Subscriber == getCommFB()->getComServiceType()){
-				if(0 == numData){
-					numData = 1;  //register for the item used for the event transmission
-				}
-				for(int i = 0; i < numData; i++){
-					COPC_UA_Handler::getInstance().registerNodeCallBack(m_apUANodeId[i], this);
-				}
+				//if(0 == numData){
+				//	numData = 1;  //register for the item used for the event transmission
+				//}
+				//for(int i = 0; i < numData; i++){
+				COPC_UA_Handler::getInstance().registerNodeCallBack(m_apUANodeId[1], this);
 			}
 		}
 	}
-
-	// for OPC_UA also pass the parameters necessary to locate the variable at the correct
-	//position in the address space.
-
-
-	return retVal;
+	return retValEcom;
 }
 
 

@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include "../../arch/devlog.h"
 #include "comlayer.h"
+#include "open62541/build/src_generated/ua_namespaceinit_generated.h"
 
 //FIXME add network layer by specification
 //fbdk[].opc_ua[tcp://localhost:1883, ClientID, Topic]

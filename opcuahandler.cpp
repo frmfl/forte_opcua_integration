@@ -15,7 +15,7 @@
 #include <string.h>
 #include <cstdbool>
 #include <commfb.h>
-#include "open62541/build/src_generated/ua_namespaceinit_generated.h"
+
 
 using namespace forte::com_infra;
 
@@ -78,7 +78,9 @@ COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
 
 	configureUAServer(); 	// configure a standard server
 	mOPCUAServer = UA_Server_new(m_server_config);
-	flipflop_custom_ns(mOPCUAServer);
+#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+	ua_namespaceinit_generated(mOPCUAServer);
+#endif
 	setServerRunning();		// set server loop flag
 
 	/*
@@ -157,6 +159,7 @@ UA_StatusCode COPC_UA_Handler::getFBNodeId(const CFunctionBlock* pCFB, UA_NodeId
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
 	retVal = UA_Server_readNodeId(mOPCUAServer, FBNodeId, returnNodeId);		// read node of given ID
+
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
 	}else{
@@ -179,7 +182,7 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 	UA_NodeId SPNodeId = UA_NODEID_STRING_ALLOC(1, SPName);
 
 	UA_NodeId* returnNodeId = UA_NodeId_new();
-	retVal = UA_Server_readNodeId(mOPCUAServer,SPNodeId, returnNodeId);		// read node of given ID
+	retVal = UA_Server_readNodeId(mOPCUAServer, SPNodeId, returnNodeId);		// read node of given ID
 	if(retVal != UA_STATUSCODE_GOOD){
 		return retVal;		// reading not successful
 	}else{
@@ -191,7 +194,7 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 UA_StatusCode COPC_UA_Handler::assembleUANodeId(const CIEC_ANY* dataArray, UA_NodeId *returnNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	UA_Variant* valueVar = UA_Variant_new();
-
+/*
 	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
 			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
 
@@ -206,7 +209,7 @@ UA_StatusCode COPC_UA_Handler::assembleUANodeId(const CIEC_ANY* dataArray, UA_No
 			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
 
 	returnNodeId->identifier = *valueVar;
-
+*/
 	return retVal;
 }
 
@@ -505,7 +508,7 @@ UA_StatusCode COPC_UA_Handler::registerNodeCallBack(UA_NodeId *paNodeId, forte::
 }
 
 
-void COPC_UA_Handler::onWrite(void *handle, const UA_NodeId nodeid, const UA_Variant *pa_pstValue,
+void COPC_UA_Handler::onWrite(void *h, const UA_NodeId nodeid, const UA_Variant *data,
 		const UA_NumericRange *range){
 	/*
 	forte::com_infra::CComLayer *layer = static_cast<forte::com_infra::CComLayer *>(handle);
