@@ -39,9 +39,8 @@ const SFBInterfaceSpec FORTE_OPCUA_NodeID::scm_stFBInterfaceSpec = {
 void FORTE_OPCUA_NodeID::alg_sendNodeId(void){
 AOPCUANodeID().nsIndex() = nsIndex();
 AOPCUANodeID().identifierType() = identifierType();
-AOPCUANodeID().identifier() = identifier().clone(static_cast<TForteByte *>(&(AOPCUANodeID().identifier())));
+AOPCUANodeID().identifier().clone(reinterpret_cast<TForteByte *>(&(identifier())));
 }
-
 
 void FORTE_OPCUA_NodeID::enterStateSTART(void){
   m_nECCState = scm_nStateSTART;
