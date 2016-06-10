@@ -3,15 +3,8 @@
  ***
  *** This file was generated using the 4DIAC FORTE Export Filter V1.0.x!
  ***
- *** Copyright (c) 2015-2016 Florian Froschermeier <florian.froschermeier@tum.de>
- *** All rights reserved. This program and the accompanying materials
- *** are made available under the terms of the Eclipse Public License v1.0
- *** which accompanies this distribution, and is available at
- *** http://www.eclipse.org/legal/epl-v10.html
- ***
  *** Name: OPCUA_NodeID
- *** Description: Basic Function Block Type as source for OPC UA NodeID 
- *** references for use in generic OPC-UA Publish and Subscribe Function Blocks. 
+ *** Description: Basic Function Block Type
  *** Version: 
  ***     0.0: 2016-05-09/4DIAC-IDE - 4DIAC-Consortium - 
  *************************************************************************/
