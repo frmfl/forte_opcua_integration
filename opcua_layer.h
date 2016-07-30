@@ -46,6 +46,8 @@ private:
 	 */
 
 	UA_NodeId **m_apUANodeId;
+	static const char scmParamIDSeparator = ';';	// Character separating the Param ID in the following format: opc_ua[address:port];OPCUA_NodeId
+	static const char scmNodeIdSeparator = ':';		// Character separating the OPCUA_NodeId in the following format: opc_ua[address:port];ParentNode:ChildNode
 };
 
 #endif /* SRC_MODULES_OPC_UA_OPCUA_LAYER_H_ */

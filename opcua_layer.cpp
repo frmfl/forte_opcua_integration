@@ -18,9 +18,13 @@
 
 using namespace forte::com_infra;
 
+const char COPC_UA_Layer::scmNodeIdSeparator;
+const char COPC_UA_Layer::scmParamIDSeparator;
 
-COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(e_Nothing){
+
+COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(e_Nothing), COPC_UA_Handler::getInstance(){
 	// constructor list initialization
+
 }
 
 
@@ -44,11 +48,15 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		int numData = getCommFB()->getNumSD();
 		CIEC_ANY* dataArray = getCommFB()->getSDs();
 
+
 		/* check if node exist in external namespace or need to be created */
 #ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+		/* Necessary if custom OPC UA FunctionBlocks are used
+		 * Solution was deprecated because of inability to create generic version of these OPC UA Blocks.
+		 * m_apUANodeId = new UA_NodeId *[1];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId plus corresponding SDs and RDs.
+		 * memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * 1);
+		 */
 
-		m_apUANodeId = new UA_NodeId *[1];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
-		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * 1);
 
 		// Use nodes from external namespace
 		COPC_UA_Handler::getInstance().assembleUANodeId(dataArray, m_apUANodeId[1]);	// Assemble node id from ANodeId Adapter information
@@ -59,6 +67,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 
 
 #else
+		// TODO: this option is only kept for demonstration purpose. Obsolete because of restriction to Publishers.
 		// Create address space nodes from the 61499 model
 		m_apUANodeId = new UA_NodeId *[numData];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
 		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * numData);
