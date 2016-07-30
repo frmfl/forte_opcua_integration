@@ -194,10 +194,19 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 	};
 	return retVal;
 }
+/* Method assembleUANodeId is used to parse the Reference NodeId of Publisher and Subscriber FunctionBlocks.
+ * The ParamId is of the following format: opc_ua[address:port];NamespaceIndex:IdentifierType:Identifier
+ * Example: opc_ua[127.0.0.1:16664];2:String:Q
+ */
+//pass the charecter string after the
+UA_StatusCode COPC_UA_Handler::assembleUANodeId(char something, UA_NodeId *returnNodeId){
+	UA_UInt16 namespaceindex;
 
-UA_StatusCode COPC_UA_Handler::assembleUANodeId(const CIEC_ANY* dataArray, UA_NodeId *returnNodeId){
+	UA_NodeId newnodeid;
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	UA_Variant* valueVar = UA_Variant_new();
+
+
 
 	//CIEC_ANY::EDataTypeID myid1 = dataArray[1].getDataTypeID();
 
@@ -230,13 +239,13 @@ UA_DataType mytype_value
 	                       &UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
 	       returnNodeId->identifierType = static_cast<UA_NodeIdType>(valueVar->data);
 	 */
-	/*
+/*
 	       retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[4].getConstDataPtr()),
 	                       &UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
 
 	      returnNodeId->identifier = *valueVar;
 
-
+*/
 
 
 	return retVal;
