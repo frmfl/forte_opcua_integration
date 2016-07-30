@@ -16,9 +16,9 @@
 #include <cstdbool>
 #include <commfb.h>
 
-#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
-#include "open62541/build/src_generated/ua_namespaceinit_generated.h"
-#endif
+/*#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+#include <open62541/build/src_generated/ua_namespaceinit_generated.h>
+#endif*/
 
 using namespace forte::com_infra;
 
@@ -81,9 +81,10 @@ COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
 
 	configureUAServer(); 	// configure a standard server
 	mOPCUAServer = UA_Server_new(m_server_config);
-#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+	/*#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 	ua_namespaceinit_generated(mOPCUAServer);
-#endif
+#endif*/
+
 	setServerRunning();		// set server loop flag
 
 	/*
@@ -197,56 +198,51 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 UA_StatusCode COPC_UA_Handler::assembleUANodeId(const CIEC_ANY* dataArray, UA_NodeId *returnNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	UA_Variant* valueVar = UA_Variant_new();
-    UA_UInt32     numeric;
-    UA_String     string;
-    UA_Guid       guid;
-    UA_ByteString byteString;
-    UA_NodeId * newnode;
-  /*
-    switch (AUSDRUCK)
-    {
-    case K1:
-       AKTION1
-       [break;]
-    case K2:
-       AKTION2
-       [break;]
-    ...
-    case Kx:
-       AKTIONx
-       [break;]
-    [default:
-       AKTIONy]
-    }
 
-*/
+	//CIEC_ANY::EDataTypeID myid1 = dataArray[1].getDataTypeID();
 
 
-retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
-			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]]);
+	/*
+const UA_DataType objDataType = UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]];
+void* myObj = UA_new(&objDataType);
+//returnNodeId->namespaceIndex = const_cast<objDataType>();
+//UA_DataTypeAttributes
+const UA_DataType* mytype = valueVar->type;
+UA_DataType mytype_value
+	 */
 
-/*if(valueVar->type == &UA_UInt16){
-returnNodeId->namespaceIndex = *(reinterpret_cast<UA_UInt16 *>(valueVar->data));
-}
-*/
 
-void *value = UA_new(valueVar->type);
-void* data = valueVar->data;
 
-//UA_Variant_setScalarCopy(value, valueVar->data, valueVar->type);
-/*
-	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[3].getConstDataPtr()),
-			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
-	returnNodeId->identifierType = static_cast<UA_NodeIdType>(valueVar->data);
-*/
-/*
-	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[4].getConstDataPtr()),
-			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
+	//retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
+	//		&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]]);
 
-	returnNodeId->identifier = *valueVar;
-*/
+	/*if(valueVar->type == &UA_UInt16){
+	returnNodeId->namespaceIndex = *(reinterpret_cast<UA_UInt16 *>(valueVar->data));
+	}
+	 */
+
+	//void *value = UA_new(valueVar->type);
+	//void* data = valueVar->data;
+
+	//UA_Variant_setScalarCopy(value, valueVar->data, valueVar->type);
+	/*
+	       retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[3].getConstDataPtr()),
+	                       &UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
+	       returnNodeId->identifierType = static_cast<UA_NodeIdType>(valueVar->data);
+	 */
+	/*
+	       retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[4].getConstDataPtr()),
+	                       &UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
+
+	      returnNodeId->identifier = *valueVar;
+
+
+
+
 	return retVal;
 }
+
+
 
 /* Function creates an address space object node defined by a given pointer to
  * a control function block. If creation successful the NodeId is returned otherwise
