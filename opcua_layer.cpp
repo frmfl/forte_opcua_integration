@@ -37,43 +37,43 @@ void COPC_UA_Layer::closeConnection(){
 EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 	EComResponse retValEcom = e_InitOk;
 	UA_StatusCode retValUA;
-	int numData;
-	CIEC_ANY *dataArray;
-
 
 	/* PUBLISHER */
 	if(e_Publisher == getCommFB()->getComServiceType()){
 
-		numData = getCommFB()->getNumSD();
-		dataArray = getCommFB()->getSDs();
-		int numRDData = getCommFB()->getNumRD();
+		int numData = getCommFB()->getNumSD();
+		CIEC_ANY* dataArray = getCommFB()->getSDs();
 
-		/*
-		 * Differentiate if nodes need to be created or exist in address space
-		 * Differentiate if publisher is a GEN_OPCUA_PUBLISHER or regular GEN_PUBLISHER
-		 * IF exist pass pointer to data to handler
-		 */
-#ifndef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
-		// Create Nodes from model architecture
-		retValUA = createItems(dataArray, numData, paLayerParameter);
-		//FIXME add publish init value in create items
+		/* check if node exist in external namespace or need to be created */
+#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
 
-#endif
 		m_apUANodeId = new UA_NodeId *[1];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
 		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * 1);
 
+		// Use nodes from external namespace
 		COPC_UA_Handler::getInstance().assembleUANodeId(dataArray, m_apUANodeId[1]);	// Assemble node id from ANodeId Adapter information
 
 		// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
 		COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], dataArray[1]);
+
+
+
+#else
+		// Create address space nodes from the 61499 model
+		m_apUANodeId = new UA_NodeId *[numData];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
+		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * numData);
+		retValUA = createItems(dataArray, numData, paLayerParameter);
+
+#endif
 
 
 	} else{
 
 		/* SUBSCRIBER */
 		// Subscribe has initial value and then new one after each update.
-		numData = getCommFB()->getNumRD();
-		dataArray = getCommFB()->getRDs();
+		// for now only one subscription per subscriber block
+		int numData = getCommFB()->getNumRD();
+		CIEC_ANY* dataArray = getCommFB()->getRDs();
 
 		m_apUANodeId = new UA_NodeId *[1];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
 		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * 1);
@@ -83,24 +83,9 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
 		COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], dataArray[1]);
 
-
-
-		// create node
-		// register publisher
-		// create node + register publisher
-		// register callback to subscriber node
-		// create node + register subscriber callback to node
-
-
 		// Register notification Callback for Subscriber Function Blocks
 		if(e_InitOk == retValEcom){
-			if(e_Subscriber == getCommFB()->getComServiceType()){
-				//if(0 == numData){
-				//	numData = 1;  //register for the item used for the event transmission
-				//}
-				//for(int i = 0; i < numData; i++){
 				COPC_UA_Handler::getInstance().registerNodeCallBack(m_apUANodeId[1], this);
-			}
 		}
 	}
 	return retValEcom;
@@ -213,13 +198,24 @@ EComResponse COPC_UA_Layer::sendData(void *paData, unsigned int paSize){
 	}else {
 		//CIEC_ANY const *SDs(static_cast<TConstIEC_ANYPtr>(paData));
 		CIEC_ANY *SDs(static_cast<CIEC_ANY*>(paData));	// direct initialization of pointer to CIEC_ANY class
+
+#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+
+		COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], SDs[1]);
+
+#else
 		for(unsigned int i = 0; i < paSize; i++){
 			COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[i], SDs[i]);
 			break;
 		}
+#endif
+
+
 	}
 	return retVal;
 }
+
+
 
 
 EComResponse COPC_UA_Layer::recvData(const void * pa_pvData, unsigned int pa_unSize){

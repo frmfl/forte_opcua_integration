@@ -16,6 +16,9 @@
 #include <cstdbool>
 #include <commfb.h>
 
+#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
+#include "open62541/build/src_generated/ua_namespaceinit_generated.h"
+#endif
 
 using namespace forte::com_infra;
 
@@ -194,17 +197,49 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 UA_StatusCode COPC_UA_Handler::assembleUANodeId(const CIEC_ANY* dataArray, UA_NodeId *returnNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 	UA_Variant* valueVar = UA_Variant_new();
+    UA_UInt32     numeric;
+    UA_String     string;
+    UA_Guid       guid;
+    UA_ByteString byteString;
+    UA_NodeId * newnode;
+  /*
+    switch (AUSDRUCK)
+    {
+    case K1:
+       AKTION1
+       [break;]
+    case K2:
+       AKTION2
+       [break;]
+    ...
+    case Kx:
+       AKTIONx
+       [break;]
+    [default:
+       AKTIONy]
+    }
+
+*/
+
+
+retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
+			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]]);
+
+/*if(valueVar->type == &UA_UInt16){
+returnNodeId->namespaceIndex = *(reinterpret_cast<UA_UInt16 *>(valueVar->data));
+}
+*/
+
+void *value = UA_new(valueVar->type);
+void* data = valueVar->data;
+
+//UA_Variant_setScalarCopy(value, valueVar->data, valueVar->type);
 /*
-	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
-			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
-
-	returnNodeId->namespaceIndex = *valueVar;
-
 	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[3].getConstDataPtr()),
 			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
-
-	returnNodeId->identifierType = *valueVar;
-
+	returnNodeId->identifierType = static_cast<UA_NodeIdType>(valueVar->data);
+*/
+/*
 	retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[4].getConstDataPtr()),
 			&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
 
