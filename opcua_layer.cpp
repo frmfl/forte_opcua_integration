@@ -22,9 +22,10 @@ const char COPC_UA_Layer::scmNodeIdSeparator;
 const char COPC_UA_Layer::scmParamIDSeparator;
 
 
-COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(e_Nothing), COPC_UA_Handler::getInstance(){
-	// constructor list initialization
 
+COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(e_Nothing){
+	// constructor list initialization
+	COPC_UA_Handler::getInstance();
 }
 
 
@@ -62,13 +63,13 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 		COPC_UA_Handler::getInstance().assembleUANodeId(dataArray, m_apUANodeId[1]);	// Assemble node id from ANodeId Adapter information
 
 		// write the initial value to the OPC_UA Address Space so that the data type of the item gets set
-		COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], dataArray[1]);
+		//COPC_UA_Handler::getInstance().updateNodeValue(m_apUANodeId[1], dataArray[1]);
 
 
 
 #else
-		// TODO: this option is only kept for demonstration purpose. Obsolete because of restriction to Publishers.
-		// Create address space nodes from the 61499 model
+		// Automatic creation of UA Server AddressSpace from IEC61499 Application through model transition.
+		// TODO: remove. This option is only kept as an idea source. Obsolete because solution is applicable to Publishers only.
 		m_apUANodeId = new UA_NodeId *[numData];  //TODO for now Publisher only publishes a single value. Extend to handling multiple NodeId Adapters plus corresponding SDs and RDs.
 		memset(m_apUANodeId, 0, sizeof(UA_NodeId *) * numData);
 		retValUA = createItems(dataArray, numData, paLayerParameter);
@@ -105,7 +106,7 @@ EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int numSD, char* 
 	EComResponse retValEcom = e_InitOk;
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 
-	if(0 == numSD){		// For pure event messages
+	if(0 == numSD){		// For pure event indication
 
 		retValEcom = e_InitInvalidId;
 		DEVLOG_ERROR("OPCUA Publisher without SD Signal, pure event handling\n");
