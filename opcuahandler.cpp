@@ -64,34 +64,22 @@ const int COPC_UA_Handler::scmUADataTypeMapping[] = {
 		//e_Max = 65535 // Guarantees at least 16 bits - otherwise gcc will optimizes on some platforms
 };
 
-void COPC_UA_Handler::configureUAServer() {
+void COPC_UA_Handler::configureUAServer(int UAServerPort) {
 	m_server_config = UA_ServerConfig_standard;
 	m_server_config.enableUsernamePasswordLogin = false;
 	m_server_config.networkLayersSize = 1;
 	m_server_config.logger = Logger_Stdout;
 
-	/*
-	 * FIXME use port and address from Publisher ID input
-	 */
-	m_server_networklayer = UA_ServerNetworkLayerTCP(UA_ConnectionConfig_standard, 16664);
+	m_server_networklayer = UA_ServerNetworkLayerTCP(UA_ConnectionConfig_standard, UAServerPort);	// TODO: pass port ID from layer ->Problems with Singleton
 	m_server_config.networkLayers = &m_server_networklayer;
 }
 
 COPC_UA_Handler::COPC_UA_Handler() : m_server_config(), m_server_networklayer(){
-
-	configureUAServer(); 	// configure a standard server
+	int UAServerPort = 16664;	// TODO: pass port ID from layer ->Problems with Singleton
+	configureUAServer(UAServerPort); 	// configure a standard server
 	mOPCUAServer = UA_Server_new(m_server_config);
-	/*#ifdef FORTE_COM_OPC_UA_ENABLE_INIT_NAMESPACE
-	ua_namespaceinit_generated(mOPCUAServer);
-#endif*/
 
 	setServerRunning();		// set server loop flag
-
-	/*
-	char *UANamespace = "4DIAC_System";
-	UA_UInt16 systemNamespace = UA_Server_addNamespace(mOPCUAServer, UANamespace);
-	 */
-
 
 	if(!isAlive()){
 		//thread is not running start it
@@ -194,62 +182,122 @@ UA_StatusCode COPC_UA_Handler::getSPNodeId(const CFunctionBlock *pCFB, SConnecti
 	};
 	return retVal;
 }
+
+
+
 /* Method assembleUANodeId is used to parse the Reference NodeId of Publisher and Subscriber FunctionBlocks.
  * The ParamId is of the following format: opc_ua[address:port];NamespaceIndex:IdentifierType:Identifier
- * Example: opc_ua[127.0.0.1:16664];2:String:Q
+ * Example: opc_ua[127.0.0.1:16664;2:String:Q;2:String:G]
  */
 //pass the charecter string after the
-UA_StatusCode COPC_UA_Handler::assembleUANodeId(char something, UA_NodeId *returnNodeId){
-	UA_UInt16 namespaceindex;
-
-	UA_NodeId newnodeid;
+UA_StatusCode COPC_UA_Handler::assembleUANodeId(char* NodeIdString, UA_NodeId *returnNodeId){
 	UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-	UA_Variant* valueVar = UA_Variant_new();
+
+	UA_NodeId * ReferenceId = UA_NodeId_new();
+	UA_NodeId_init(ReferenceId);
 
 
-
-	//CIEC_ANY::EDataTypeID myid1 = dataArray[1].getDataTypeID();
-
-
-	/*
-const UA_DataType objDataType = UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]];
-void* myObj = UA_new(&objDataType);
-//returnNodeId->namespaceIndex = const_cast<objDataType>();
-//UA_DataTypeAttributes
-const UA_DataType* mytype = valueVar->type;
-UA_DataType mytype_value
+	/*   UA_NodeIdTypes
+	 *    UA_NODEIDTYPE_NUMERIC    = 0,  In the binary encoding, this can also become 1 or 2
+	 *                                     (2byte and 4byte encoding of small numeric nodeids)
+	 *    UA_NODEIDTYPE_STRING     = 3,
+	 *    UA_NODEIDTYPE_GUID       = 4,
+	 *    UA_NODEIDTYPE_BYTESTRING = 5
 	 */
+	// Example ParamIds: (2:string:Q)(2:numeric:Q)(2:guid:Q)(2:bytestring:Q)
+	char *pch;
+	int i = 0;
+	pch = strtok(NodeIdString,":");
+	while (pch != NULL) {
+		i++;
+		if(i == 1){
+			/* Assign NodeId namespace index */
+			ReferenceId->namespaceIndex = (UA_UInt16) pch;
+
+		} else if (i == 2){
+			/* Assign NodeId identifier types */
+			if ( !strcmp("numeric",pch)){
+				ReferenceId->identifierType = UA_NODEIDTYPE_NUMERIC;
+			}
+			else if ( !strcmp("string",pch)){
+				ReferenceId->identifierType = UA_NODEIDTYPE_STRING;
+			}
+			else if (!strcmp("guid",pch)){
+				ReferenceId->identifierType = UA_NODEIDTYPE_GUID;
+			}
+			else if (!strcmp("bytestring",pch)){
+				ReferenceId->identifierType = UA_NODEIDTYPE_BYTESTRING;
+			}
+			else {
+				return 0;
+			}
+
+		} else if (i == 3){
+			/* Assign NodeId identifier */
+			switch (ReferenceId->identifierType) {
+			case 0:
+				ReferenceId->identifier.numeric = (UA_UInt32) pch;
+				break;
+			case 3:
+				ReferenceId->identifier.string = (UA_String) pch;
+				break;
+			case 4:
+				ReferenceId->identifier.guid = (UA_Guid) pch;
+				break;
+			case 5:
+				ReferenceId->identifier.byteString = (UA_ByteString) pch;
+				break;
+			default:
+				break;
+			}
+
+		};
+		pch = strtok (NULL, ":");
+
+	};
+	retVal = UA_NodeId_copy(ReferenceId, returnNodeId);	// NodeId successfully created
+	return retVal;
+}
+
+
+//CIEC_ANY::EDataTypeID myid1 = dataArray[1].getDataTypeID();
+
+
+/*
+	const UA_DataType objDataType = UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]];
+	void* myObj = UA_new(&objDataType);
+	//returnNodeId->namespaceIndex = const_cast<objDataType>();
+	//UA_DataTypeAttributes
+	const UA_DataType* mytype = valueVar->type;
+	UA_DataType mytype_value
+ */
 
 
 
-	//retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
-	//		&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]]);
+//retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[2].getConstDataPtr()),
+//		&UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[2].getDataTypeID()]]);
 
-	/*if(valueVar->type == &UA_UInt16){
+/*if(valueVar->type == &UA_UInt16){
 	returnNodeId->namespaceIndex = *(reinterpret_cast<UA_UInt16 *>(valueVar->data));
 	}
-	 */
+ */
 
-	//void *value = UA_new(valueVar->type);
-	//void* data = valueVar->data;
+//void *value = UA_new(valueVar->type);
+//void* data = valueVar->data;
 
-	//UA_Variant_setScalarCopy(value, valueVar->data, valueVar->type);
-	/*
+//UA_Variant_setScalarCopy(value, valueVar->data, valueVar->type);
+/*
 	       retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[3].getConstDataPtr()),
 	                       &UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[3].getDataTypeID()]]);
 	       returnNodeId->identifierType = static_cast<UA_NodeIdType>(valueVar->data);
-	 */
+ */
 /*
 	       retVal = UA_Variant_setScalarCopy(valueVar, static_cast<const void*>(dataArray[4].getConstDataPtr()),
 	                       &UA_TYPES[COPC_UA_Handler::getInstance().scmUADataTypeMapping[dataArray[4].getDataTypeID()]]);
 
 	      returnNodeId->identifier = *valueVar;
 
-*/
-
-
-	return retVal;
-}
+ */
 
 
 

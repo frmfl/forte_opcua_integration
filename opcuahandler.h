@@ -25,8 +25,6 @@
 #include "comlayer.h"
 
 
-//FIXME add network layer by specification
-//fbdk[].opc_ua[tcp://localhost:1883, ClientID, Topic]
 
 class COPC_UA_Handler : public CExternalEventHandler, public CThread{
 	DECLARE_SINGLETON(COPC_UA_Handler);
@@ -49,7 +47,7 @@ public:
 	UA_StatusCode createUAVarNode(const CFunctionBlock* pCFB, SConnectionPoint& sourceRD, UA_NodeId * returnVarNodeId);	// create variable node from SourcePoint Node Id
 	UA_StatusCode createUAObjNode(const CFunctionBlock* pCFB, UA_NodeId * returnObjNodeId);	// create object node from Parent Function Block Node Id
 	//UA_StatusCode createUAMethodNode(const CFunctionBlock* pCFB, UA_NodeId * returnMethodNodeId);
-	UA_StatusCode assembleUANodeId(const CIEC_ANY* NodeAttributes, UA_NodeId *returnNodeId);
+	UA_StatusCode assembleUANodeId(char* NodeIdString, UA_NodeId *returnNodeId);
 
 	/* OPC_UA Handler interaction */
 	void updateNodeValue(UA_NodeId * pNodeId, CIEC_ANY &paDataPoint);
@@ -76,7 +74,7 @@ private:
 	void setServerRunning();
 	void stopServerRunning();
 	//static forte::com_infra::EComResponse m_eComResponse;
-	void configureUAServer();
+	void configureUAServer(int UAServerPort);
 
 	// implementation of thread.h virtual method start
 	virtual void run();
