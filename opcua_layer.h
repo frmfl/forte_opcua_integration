@@ -44,10 +44,10 @@ private:
 		UA_NodeId **ppNodeId_SrcPoint;
 	} st_ParentChildNodeId;	//!< pointer to the array of SourcePoint (SDs) NodeIds managed by the OPC_UA Server Stack
 	 */
-
-	UA_NodeId **m_apUANodeId;	// OPC UA SIFBs are restricted to a single Node, however for Server multiple IDs are necessary.
-	static const char scmParamIDSeparator = ';';	// Character separating the Param ID in the following format: opc_ua[address:port];OPCUA_NodeId
-	static const char scmNodeIdSeparator = ':';		// Character separating the OPCUA_NodeId in the following format: opc_ua[address:port];NamespaceIndex:IdentifierType:Identifier
+	//TODO: array necessary. For input and output
+	UA_NodeId **m_apUANodeId;	// OPC UA (Publisher and Subscriber SIFBs) are restricted to a single port each. For OPC UA Server a input ouput pair format: opc_ua[address:port];InputNodeId:OutputNodeId
+	static constexpr const char* scmParamIDSeparator = ";";	// Character separating the Param ID in the following format: opc_ua[address:port];OPCUA_NodeId
+	static constexpr const char* scmNodeIdSeparator = ":";		// Character separating the OPCUA_NodeId in the following format: opc_ua[address:port];NamespaceIndex(int):IdentifierType(numeric,string,guid,bytestring):Identifier(union of type).
 };
 
 

@@ -18,14 +18,13 @@
 
 using namespace forte::com_infra;
 
-const char COPC_UA_Layer::scmNodeIdSeparator;
-const char COPC_UA_Layer::scmParamIDSeparator;
+
 
 
 
 COPC_UA_Layer::COPC_UA_Layer(CComLayer * pa_poUpperLayer, CCommFB * pa_poComFB) : CComLayer(pa_poUpperLayer, pa_poComFB), m_apUANodeId(0), mInterruptResp(e_Nothing){
 	// constructor list initialization
-	COPC_UA_Handler::getInstance();
+
 }
 
 
@@ -42,6 +41,62 @@ void COPC_UA_Layer::closeConnection(){
 EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 	EComResponse retValEcom = e_InitOk;
 	UA_StatusCode retValUA;
+
+
+	char *pch;
+	int i = 0;
+	pch = strtok (paLayerParameter,";");
+	while (pch != NULL) {
+		i++;
+		if(i==1){
+			/* First string is omitted for now */
+			// TODO: pass port ID to ua handler constructor
+			// COPC_UA_Handler::getInstance(portId)  -> Singleton pattern not supporting parameters?
+		} else{
+			/* Process NodeIds */
+			COPC_UA_Handler::getInstance().assembleUANodeId(pch, m_apUANodeId[1]);
+		}
+	    pch = strtok (NULL, ";");
+	}
+/*
+	pch = strtok (str," ,.-");
+	  while (pch != NULL)
+	  {
+	    printf ("%s\n",pch);
+	    pch = strtok (NULL, " ,.-");
+	  }
+
+/*
+	//char str[] = "opc_ua[127.0.0.1:16662];2:String:G;2:String:Q";
+	char *next;
+
+	char * pch;
+	printf ("Looking for the 's' character in \"%s\"...\n",paLayerParameter);
+	pch=strchr(paLayerParameter,';');
+	while (pch!=NULL)
+	{
+		printf("%s",pch+1);
+		pch=strchr(pch+1,';');
+
+	}
+	char  *c = "123.45";
+	int    i = (int) c;
+	/*
+	mSFPItem = new sfp_item *[paNumData];
+	memset(mSFPItem, 0, sizeof(sfp_item *) * paNumData);
+	char *nextParam;
+
+	for(int i = 0; i < paNumData; i++){
+	  if(0 != paLayerParameter){
+	    nextParam = strchr(paLayerParameter, scmParameterSeperator);
+	    if(0 != nextParam){
+	 *nextParam = '\0';
+	      nextParam++;
+	    }
+	    mSFPItem[i] = CEclipseSCADASFPHandler::getInstance().registerDataPoint(paLayerParameter, "Coment");
+	 */
+
+
 
 	/* PUBLISHER */
 	if(e_Publisher == getCommFB()->getComServiceType()){
@@ -77,7 +132,7 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 #endif
 
 
-	} else{
+	} else if (e_Subscriber == getCommFB()->getComServiceType()){
 
 		/* SUBSCRIBER */
 		// Subscribe has initial value and then new one after each update.
@@ -95,11 +150,19 @@ EComResponse COPC_UA_Layer::openConnection(char * paLayerParameter){
 
 		// Register notification Callback for Subscriber Function Blocks
 		if(e_InitOk == retValEcom){
-				COPC_UA_Handler::getInstance().registerNodeCallBack(m_apUANodeId[1], this);
+			COPC_UA_Handler::getInstance().registerNodeCallBack(m_apUANodeId[1], this);
 		}
+	} else if(e_Server == getCommFB()->getComServiceType()) {
+		/* SERVER */
+		for(int i = 0; i<2; i++){
+			//2 for one NodeId of the input and one NodeId of the output
+		}
+	} else{
+		// Unknown Function Block Type
 	}
 	return retValEcom;
 }
+
 
 
 EComResponse COPC_UA_Layer::createItems(CIEC_ANY *paDataArray, int numSD, char* paLayerParameter){
